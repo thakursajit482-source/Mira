@@ -1,9 +1,5 @@
-"""Service layer for Mira.
+"""Service layer package for Mira."""
 
-NOTE: In Phase 1 Foundation, this package remains empty.
-In subsequent phases, services will orchestrate business workflows between the API,
-the deterministic Roadmap Engine, AI helpers, and database repositories:
-- RoadmapService
-- TaskService / ProgressService
-- AIPlanService
-"""
+from backend.app.services.roadmap_service import RoadmapService, roadmap_service
+
+__all__ = ["RoadmapService", "roadmap_service"]
