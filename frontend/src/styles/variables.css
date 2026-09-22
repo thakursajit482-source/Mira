@@ -1,0 +1,86 @@
+:root {
+  /* Color Palette - Dark Surfaces */
+  --bg-primary: #0a0c12;
+  --bg-secondary: #121520;
+  --bg-tertiary: #191d2c;
+  --bg-card: #131724;
+  --bg-card-hover: #1a2032;
+  --bg-modal: #111422;
+  --bg-overlay: rgba(5, 7, 12, 0.75);
+
+  /* Borders */
+  --border-subtle: #1e2436;
+  --border-medium: #2b334c;
+  --border-strong: #3b4668;
+  --border-focus: #6366f1;
+
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-disabled: #475569;
+  --text-inverse: #0a0c12;
+
+  /* Status Colors */
+  --status-completed: #10b981;
+  --status-completed-bg: rgba(16, 185, 129, 0.12);
+  --status-completed-border: rgba(16, 185, 129, 0.3);
+
+  --status-current: #6366f1;
+  --status-current-bg: rgba(99, 102, 241, 0.14);
+  --status-current-border: rgba(99, 102, 241, 0.45);
+  --status-current-glow: 0 0 24px rgba(99, 102, 241, 0.4);
+
+  --status-in-progress: #f59e0b;
+  --status-in-progress-bg: rgba(245, 158, 11, 0.12);
+  --status-in-progress-border: rgba(245, 158, 11, 0.35);
+
+  --status-locked: #475569;
+  --status-locked-bg: rgba(71, 85, 105, 0.15);
+  --status-locked-border: rgba(71, 85, 105, 0.25);
+
+  --status-danger: #ef4444;
+  --status-danger-bg: rgba(239, 68, 68, 0.12);
+  --status-danger-border: rgba(239, 68, 68, 0.3);
+
+  /* Brand Accents */
+  --accent-primary: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-active: #4338ca;
+  --accent-light: #818cf8;
+  --accent-glow: 0 0 25px rgba(99, 102, 241, 0.35);
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Border Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.45);
+  --shadow-node-active: 0 0 20px rgba(99, 102, 241, 0.4);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}

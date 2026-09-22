@@ -1,0 +1,142 @@
+.headerCard {
+  background-color: var(--bg-card);
+  border-color: var(--border-medium);
+  margin-bottom: var(--space-8);
+}
+
+.headerTop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .headerTop {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tagRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.roadmapTag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-light);
+}
+
+.roadmapTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+  .roadmapTitle {
+    font-size: 1.75rem;
+  }
+}
+
+.roadmapDesc {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+}
+
+.switcher {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.switcherLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.selectInput {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.selectInput:focus {
+  border-color: var(--border-focus);
+}
+
+.headerBottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-4);
+}
+
+.progressArea {
+  width: 100%;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+}
+
+.progressionSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.progressionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.progressionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.progressionSub {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.nodesList {
+  display: flex;
+  flex-direction: column;
+}

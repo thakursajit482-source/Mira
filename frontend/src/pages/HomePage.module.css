@@ -1,0 +1,199 @@
+.topSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .topSection {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.roadmapInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.roadmapTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+  .roadmapTitle {
+    font-size: 1.75rem;
+  }
+}
+
+.roadmapDescription {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  max-width: 650px;
+}
+
+.progressCard {
+  margin-bottom: var(--space-6);
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 992px) {
+  .contentGrid {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.todayCard {
+  background-color: var(--bg-card);
+  border-color: var(--border-medium);
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-4);
+}
+
+.levelBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.levelLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-light);
+}
+
+.cardTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.nextCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background-color: var(--bg-secondary);
+  border-color: var(--border-subtle);
+}
+
+.nextHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nextTag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.nextTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.nextMeta {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.viewRoadmapBtn {
+  margin-top: var(--space-2);
+  padding-left: 0;
+  justify-content: flex-start;
+}
+
+.infoCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background-color: var(--bg-secondary);
+}
+
+.infoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.infoIcon {
+  color: var(--accent-light);
+  margin-top: 2px;
+}
+
+.infoLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.infoValue {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}

@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 21px; /* Center of 44px marker */
+  height: 28px;
+  position: relative;
+}
+
+.line {
+  width: 2px;
+  height: 100%;
+  background-color: var(--border-medium);
+  transition: background-color var(--transition-normal);
+}
+
+.lineCompleted {
+  background-color: var(--status-completed);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}

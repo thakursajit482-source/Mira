@@ -1,0 +1,28 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--status-danger-bg);
+  border: 1px solid var(--status-danger-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.icon {
+  color: var(--status-danger);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+}
+
+.message {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+}

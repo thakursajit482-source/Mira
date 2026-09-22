@@ -1,9 +1,35 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.api.v1.router import api_router
 from backend.app.core.config import settings
+from backend.app.core.database import SessionLocal
+from backend.app.models.user import User
 from backend.app.schemas.health import HealthCheckResponse
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan events for application startup and shutdown."""
+    if settings.ENVIRONMENT == "development":
+        db = SessionLocal()
+        try:
+            dev_user = db.query(User).filter(User.id == 1).first()
+            if not dev_user:
+                dev_user = User(
+                    id=1,
+                    email="dev@mira.local",
+                    username="dev_user",
+                    daily_available_minutes=120,
+                )
+                db.add(dev_user)
+                db.commit()
+        except Exception:
+            db.rollback()
+        finally:
+            db.close()
+    yield
 
 
 def create_application() -> FastAPI:
@@ -14,6 +40,7 @@ def create_application() -> FastAPI:
         description="Personal AI Roadmap and Progress Management System",
         docs_url="/docs",
         redoc_url="/redoc",
+        lifespan=lifespan,
     )
 
     # Configure CORS middleware
