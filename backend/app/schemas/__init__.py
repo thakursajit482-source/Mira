@@ -10,6 +10,7 @@ from backend.app.schemas.roadmap import (
     RoadmapResponse,
     RoadmapDetailResponse,
 )
+from backend.app.schemas.progress import RoadmapProgressResponse
 
 __all__ = [
     "HealthCheckResponse",
@@ -22,4 +23,5 @@ __all__ = [
     "RoadmapUpdate",
     "RoadmapResponse",
     "RoadmapDetailResponse",
+    "RoadmapProgressResponse",
 ]

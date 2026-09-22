@@ -9,7 +9,9 @@ from backend.app.schemas.roadmap import (
     RoadmapResponse,
     RoadmapDetailResponse,
 )
+from backend.app.schemas.progress import RoadmapProgressResponse
 from backend.app.services.roadmap_service import roadmap_service
+from backend.app.services.progress_service import progress_service
 
 router = APIRouter(prefix="/roadmaps", tags=["roadmaps"])
 
@@ -71,6 +73,20 @@ def get_roadmap_details(
 ) -> RoadmapDetailResponse:
     """Get complete roadmap hierarchy: Roadmap -> Days -> Tasks."""
     return roadmap_service.get_roadmap_details(db, roadmap_id)
+
+
+@router.get(
+    "/{roadmap_id}/progress",
+    response_model=RoadmapProgressResponse,
+    summary="Get Roadmap Progress",
+    description="Retrieve calculated progress metrics for a roadmap based on completed days vs total days.",
+)
+def get_roadmap_progress(
+    roadmap_id: int,
+    db: Session = Depends(get_db),
+) -> RoadmapProgressResponse:
+    """Get calculated roadmap progress."""
+    return progress_service.calculate_roadmap_progress(db, roadmap_id)
 
 
 @router.patch(
