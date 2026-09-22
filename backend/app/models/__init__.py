@@ -1,11 +1,38 @@
-"""Database models package for Mira.
+"""SQLAlchemy ORM models package for Mira.
 
-NOTE: In Phase 1 Foundation, this package remains empty.
-In subsequent phases, it will contain SQLAlchemy ORM entities:
-- User (profile and preferences)
-- Roadmap (title, target duration, status, creation date, version metadata)
-- Day (roadmap reference, day number, status, ordering)
-- Task (day reference, title, description, estimated time, completion status, ordering)
-- RoadmapVersion / RoadmapChange (auditable history of changes/insertions)
-- AIPlanGeneration (record of AI input/output metadata for debugging and reproducibility)
+Core entities supporting the PRD:
+- User: Profile and preferences
+- Roadmap: Learning plan with fixed total duration
+- Day: Day container representing levels (preserves completed history)
+- Task: Individual unit of work with independent completion status
+- RoadmapVersion: Snapshot data for auditing and reversal
+- RoadmapChange: Auditable log of insertions, shifts, and rebalances
 """
+
+from backend.app.models.base import Base, TimestampMixin
+from backend.app.models.enums import (
+    RoadmapStatus,
+    DayStatus,
+    TaskStatus,
+    RoadmapChangeType,
+)
+from backend.app.models.user import User
+from backend.app.models.roadmap import Roadmap
+from backend.app.models.day import Day
+from backend.app.models.task import Task
+from backend.app.models.versioning import RoadmapVersion, RoadmapChange
+
+__all__ = [
+    "Base",
+    "TimestampMixin",
+    "RoadmapStatus",
+    "DayStatus",
+    "TaskStatus",
+    "RoadmapChangeType",
+    "User",
+    "Roadmap",
+    "Day",
+    "Task",
+    "RoadmapVersion",
+    "RoadmapChange",
+]

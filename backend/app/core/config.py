@@ -16,6 +16,10 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
 
+    # Database Configuration
+    # Uses SQLite fallback for local development if DATABASE_URL is not set in .env
+    DATABASE_URL: str = "sqlite:///./mira_dev.db"
+
     HOST: str = "127.0.0.1"
     PORT: int = 8000
 
