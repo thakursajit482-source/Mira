@@ -11,6 +11,14 @@ from backend.app.schemas.roadmap import (
     RoadmapDetailResponse,
 )
 from backend.app.schemas.progress import RoadmapProgressResponse
+from backend.app.schemas.insertion import (
+    NewTaskDefinition,
+    NewDayDefinition,
+    RoadmapInsertionRequest,
+    DayShiftMapping,
+    InsertionPreviewResponse,
+    InsertionResultResponse,
+)
 
 __all__ = [
     "HealthCheckResponse",
@@ -24,4 +32,10 @@ __all__ = [
     "RoadmapResponse",
     "RoadmapDetailResponse",
     "RoadmapProgressResponse",
+    "NewTaskDefinition",
+    "NewDayDefinition",
+    "RoadmapInsertionRequest",
+    "DayShiftMapping",
+    "InsertionPreviewResponse",
+    "InsertionResultResponse",
 ]

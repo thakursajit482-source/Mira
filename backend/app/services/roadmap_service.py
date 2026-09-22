@@ -7,10 +7,15 @@ from backend.app.models.user import User
 from backend.app.models.roadmap import Roadmap
 from backend.app.models.day import Day
 from backend.app.schemas.roadmap import RoadmapCreate, RoadmapUpdate
+from backend.app.schemas.insertion import (
+    RoadmapInsertionRequest,
+    InsertionPreviewResponse,
+    InsertionResultResponse,
+)
 
 
 class RoadmapService:
-    """Service layer managing Roadmap CRUD operations and user association."""
+    """Service layer managing Roadmap CRUD operations, hierarchy loading, and engine coordination."""
 
     @staticmethod
     def create_roadmap(db: Session, roadmap_in: RoadmapCreate) -> Roadmap:
@@ -126,6 +131,28 @@ class RoadmapService:
                 detail=f"Roadmap with id {roadmap_id} not found",
             )
         return roadmap
+
+    @staticmethod
+    def preview_insertion(
+        db: Session,
+        roadmap_id: int,
+        request: RoadmapInsertionRequest,
+    ) -> InsertionPreviewResponse:
+        """Generate a preview of proposed insertion without database mutation."""
+        from backend.app.roadmap_engine.engine import roadmap_engine
+        roadmap = RoadmapService.get_roadmap_details(db, roadmap_id)
+        return roadmap_engine.preview_insertion(roadmap, request)
+
+    @staticmethod
+    def apply_insertion(
+        db: Session,
+        roadmap_id: int,
+        request: RoadmapInsertionRequest,
+    ) -> InsertionResultResponse:
+        """Apply insertion to the roadmap deterministically."""
+        from backend.app.roadmap_engine.engine import roadmap_engine
+        roadmap = RoadmapService.get_roadmap_details(db, roadmap_id)
+        return roadmap_engine.apply_insertion(db, roadmap, request)
 
 
 roadmap_service = RoadmapService()

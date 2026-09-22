@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
@@ -10,6 +10,11 @@ from backend.app.schemas.roadmap import (
     RoadmapDetailResponse,
 )
 from backend.app.schemas.progress import RoadmapProgressResponse
+from backend.app.schemas.insertion import (
+    RoadmapInsertionRequest,
+    InsertionPreviewResponse,
+    InsertionResultResponse,
+)
 from backend.app.services.roadmap_service import roadmap_service
 from backend.app.services.progress_service import progress_service
 
@@ -87,6 +92,44 @@ def get_roadmap_progress(
 ) -> RoadmapProgressResponse:
     """Get calculated roadmap progress."""
     return progress_service.calculate_roadmap_progress(db, roadmap_id)
+
+
+@router.post(
+    "/{roadmap_id}/insert/preview",
+    response_model=InsertionPreviewResponse,
+    summary="Preview Roadmap Insertion",
+    description="Simulate inserting new content starting from the first incomplete day without mutating the database.",
+)
+def preview_roadmap_insertion(
+    roadmap_id: int,
+    request: RoadmapInsertionRequest,
+    db: Session = Depends(get_db),
+) -> InsertionPreviewResponse:
+    """Preview insertion without database mutation."""
+    return roadmap_service.preview_insertion(db, roadmap_id, request)
+
+
+@router.post(
+    "/{roadmap_id}/insert",
+    response_model=InsertionResultResponse,
+    summary="Insert Roadmap Content",
+    description="Insert new roadmap content starting from the first incomplete day and shift future incomplete work.",
+    responses={
+        200: {"model": InsertionResultResponse, "description": "Insertion applied successfully"},
+        409: {"model": InsertionResultResponse, "description": "Scheduling or capacity conflict detected"},
+    },
+)
+def insert_roadmap_content(
+    roadmap_id: int,
+    request: RoadmapInsertionRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> InsertionResultResponse:
+    """Apply roadmap insertion deterministically."""
+    result = roadmap_service.apply_insertion(db, roadmap_id, request)
+    if result.conflict:
+        response.status_code = status.HTTP_409_CONFLICT
+    return result
 
 
 @router.patch(

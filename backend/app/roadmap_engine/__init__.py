@@ -9,9 +9,9 @@ Mira's core roadmap rules (PRD Sections 11–15). It remains strictly decoupled 
 - Shift existing future tasks forward.
 - Enforce FIXED total roadmap duration (e.g., a 40-day roadmap stays 40 days).
 - Detect scheduling/deadline conflicts and generate previews before destructive changes.
-- Rebalance future incomplete workload across remaining day slots.
-- Maintain auditable change records.
-
-NOTE: In Phase 1 Foundation, this package defines the architectural boundary.
-Implementation of core logic begins in subsequent phases.
+- Maintain auditable change records and snapshot versions.
 """
+
+from backend.app.roadmap_engine.engine import RoadmapEngine, roadmap_engine, ShiftPlan
+
+__all__ = ["RoadmapEngine", "roadmap_engine", "ShiftPlan"]
