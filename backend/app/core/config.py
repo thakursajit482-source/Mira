@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # Uses SQLite fallback for local development if DATABASE_URL is not set in .env
     DATABASE_URL: str = "sqlite:///./mira_dev.db"
 
+    # AI Configuration
+    AI_PROVIDER: str = "mock"
+
     HOST: str = "127.0.0.1"
     PORT: int = 8000
 

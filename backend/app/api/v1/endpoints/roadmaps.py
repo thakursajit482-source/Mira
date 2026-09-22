@@ -20,10 +20,27 @@ from backend.app.schemas.rescheduling import (
     ReschedulePreviewResponse,
     RescheduleResultResponse,
 )
+from backend.app.ai.schemas import RoadmapGenerationRequest
 from backend.app.services.roadmap_service import roadmap_service
 from backend.app.services.progress_service import progress_service
 
 router = APIRouter(prefix="/roadmaps", tags=["roadmaps"])
+
+
+@router.post(
+    "/generate",
+    response_model=RoadmapDetailResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Generate Roadmap with AI",
+    description="Generate and persist a structured, day-wise roadmap from a goal using AI assistance.",
+)
+def generate_roadmap(
+    request: RoadmapGenerationRequest,
+    db: Session = Depends(get_db),
+) -> RoadmapDetailResponse:
+    """Generate and persist a new roadmap from user goal and constraints."""
+    roadmap = roadmap_service.generate_and_create_roadmap(db, request)
+    return RoadmapDetailResponse.model_validate(roadmap)
 
 
 @router.post(

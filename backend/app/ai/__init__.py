@@ -7,7 +7,28 @@ AI is a scheduling and organization assistant, not an autonomous authority.
 - AI returns strictly structured JSON data (validated against Pydantic schemas).
 - AI NEVER directly accesses or modifies the database.
 - AI proposals are passed through validation and the deterministic Roadmap Engine.
-
-NOTE: In Phase 1 Foundation, this package defines the architectural boundary.
-LLM client integration begins in subsequent phases.
 """
+
+from backend.app.ai.base import AIProvider
+from backend.app.ai.schemas import (
+    RoadmapGenerationRequest,
+    GeneratedTask,
+    GeneratedDay,
+    GeneratedRoadmap,
+)
+from backend.app.ai.validator import AIValidator, AIValidationError
+from backend.app.ai.service import AIService, ai_service
+from backend.app.ai.providers.mock import MockAIProvider
+
+__all__ = [
+    "AIProvider",
+    "RoadmapGenerationRequest",
+    "GeneratedTask",
+    "GeneratedDay",
+    "GeneratedRoadmap",
+    "AIValidator",
+    "AIValidationError",
+    "AIService",
+    "ai_service",
+    "MockAIProvider",
+]
