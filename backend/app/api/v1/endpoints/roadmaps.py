@@ -15,6 +15,11 @@ from backend.app.schemas.insertion import (
     InsertionPreviewResponse,
     InsertionResultResponse,
 )
+from backend.app.schemas.rescheduling import (
+    RoadmapRescheduleRequest,
+    ReschedulePreviewResponse,
+    RescheduleResultResponse,
+)
 from backend.app.services.roadmap_service import roadmap_service
 from backend.app.services.progress_service import progress_service
 
@@ -127,6 +132,44 @@ def insert_roadmap_content(
 ) -> InsertionResultResponse:
     """Apply roadmap insertion deterministically."""
     result = roadmap_service.apply_insertion(db, roadmap_id, request)
+    if result.conflict:
+        response.status_code = status.HTTP_409_CONFLICT
+    return result
+
+
+@router.post(
+    "/{roadmap_id}/reschedule/preview",
+    response_model=ReschedulePreviewResponse,
+    summary="Preview Roadmap Rescheduling",
+    description="Simulate rescheduling future incomplete tasks within user daily capacity without mutating the database.",
+)
+def preview_roadmap_reschedule(
+    roadmap_id: int,
+    request: RoadmapRescheduleRequest,
+    db: Session = Depends(get_db),
+) -> ReschedulePreviewResponse:
+    """Preview rescheduling without database mutation."""
+    return roadmap_service.preview_reschedule(db, roadmap_id, request)
+
+
+@router.post(
+    "/{roadmap_id}/reschedule",
+    response_model=RescheduleResultResponse,
+    summary="Reschedule Roadmap",
+    description="Deterministically rebalance future incomplete tasks within user daily capacity while preserving completed history.",
+    responses={
+        200: {"model": RescheduleResultResponse, "description": "Rescheduling applied successfully"},
+        409: {"model": RescheduleResultResponse, "description": "Capacity or scheduling conflict detected"},
+    },
+)
+def reschedule_roadmap(
+    roadmap_id: int,
+    request: RoadmapRescheduleRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> RescheduleResultResponse:
+    """Apply roadmap rescheduling deterministically."""
+    result = roadmap_service.apply_reschedule(db, roadmap_id, request)
     if result.conflict:
         response.status_code = status.HTTP_409_CONFLICT
     return result

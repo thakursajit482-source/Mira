@@ -12,6 +12,11 @@ from backend.app.schemas.insertion import (
     InsertionPreviewResponse,
     InsertionResultResponse,
 )
+from backend.app.schemas.rescheduling import (
+    RoadmapRescheduleRequest,
+    ReschedulePreviewResponse,
+    RescheduleResultResponse,
+)
 
 
 class RoadmapService:
@@ -153,6 +158,30 @@ class RoadmapService:
         from backend.app.roadmap_engine.engine import roadmap_engine
         roadmap = RoadmapService.get_roadmap_details(db, roadmap_id)
         return roadmap_engine.apply_insertion(db, roadmap, request)
+
+    @staticmethod
+    def preview_reschedule(
+        db: Session,
+        roadmap_id: int,
+        request: RoadmapRescheduleRequest,
+    ) -> ReschedulePreviewResponse:
+        """Generate a preview of proposed rescheduling without database mutation."""
+        from backend.app.roadmap_engine.rescheduler import rescheduling_engine
+        roadmap = RoadmapService.get_roadmap_details(db, roadmap_id)
+        user = db.get(User, roadmap.user_id)
+        return rescheduling_engine.preview_reschedule(roadmap, user, request)
+
+    @staticmethod
+    def apply_reschedule(
+        db: Session,
+        roadmap_id: int,
+        request: RoadmapRescheduleRequest,
+    ) -> RescheduleResultResponse:
+        """Apply rescheduling to future incomplete tasks deterministically."""
+        from backend.app.roadmap_engine.rescheduler import rescheduling_engine
+        roadmap = RoadmapService.get_roadmap_details(db, roadmap_id)
+        user = db.get(User, roadmap.user_id)
+        return rescheduling_engine.apply_reschedule(db, roadmap, user, request)
 
 
 roadmap_service = RoadmapService()

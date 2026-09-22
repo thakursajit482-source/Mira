@@ -19,6 +19,14 @@ from backend.app.schemas.insertion import (
     InsertionPreviewResponse,
     InsertionResultResponse,
 )
+from backend.app.schemas.rescheduling import (
+    TaskMovement,
+    DayWorkload,
+    WorkloadComparison,
+    RoadmapRescheduleRequest,
+    ReschedulePreviewResponse,
+    RescheduleResultResponse,
+)
 
 __all__ = [
     "HealthCheckResponse",
@@ -38,4 +46,10 @@ __all__ = [
     "DayShiftMapping",
     "InsertionPreviewResponse",
     "InsertionResultResponse",
+    "TaskMovement",
+    "DayWorkload",
+    "WorkloadComparison",
+    "RoadmapRescheduleRequest",
+    "ReschedulePreviewResponse",
+    "RescheduleResultResponse",
 ]

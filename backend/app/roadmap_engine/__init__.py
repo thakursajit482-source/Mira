@@ -13,5 +13,13 @@ Mira's core roadmap rules (PRD Sections 11–15). It remains strictly decoupled 
 """
 
 from backend.app.roadmap_engine.engine import RoadmapEngine, roadmap_engine, ShiftPlan
+from backend.app.roadmap_engine.rescheduler import ReschedulingEngine, rescheduling_engine, ReschedulePlan
 
-__all__ = ["RoadmapEngine", "roadmap_engine", "ShiftPlan"]
+__all__ = [
+    "RoadmapEngine",
+    "roadmap_engine",
+    "ShiftPlan",
+    "ReschedulingEngine",
+    "rescheduling_engine",
+    "ReschedulePlan",
+]
