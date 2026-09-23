@@ -50,11 +50,13 @@ def test_liveness_endpoints(client: TestClient):
     root_resp = client.get("/health")
     assert root_resp.status_code == 200
     assert root_resp.json()["status"] == "ok"
+    assert root_resp.json()["version"] == "1.0.0"
 
     # API v1 /api/v1/health
     v1_resp = client.get("/api/v1/health")
     assert v1_resp.status_code == 200
     assert v1_resp.json()["status"] == "ok"
+    assert v1_resp.json()["version"] == "1.0.0"
 
 
 def test_readiness_endpoints(client: TestClient):
@@ -88,6 +90,7 @@ def test_root_metadata_endpoint(client: TestClient):
     assert resp.status_code == 200
     data = resp.json()
     assert data["app"] == "Mira"
+    assert data["version"] == "1.0.0"
     assert "health" in data
     assert "ready" in data
 

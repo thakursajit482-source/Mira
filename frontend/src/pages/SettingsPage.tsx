@@ -641,6 +641,10 @@ export const SettingsPage: React.FC = () => {
                     <span className={styles.detailValue}>{health.environment}</span>
                   </div>
                   <div className={styles.detailItem}>
+                    <span className={styles.detailKey}>Version</span>
+                    <span className={styles.detailValue}>v{health.version}</span>
+                  </div>
+                  <div className={styles.detailItem}>
                     <span className={styles.detailKey}>Health</span>
                     <span className={styles.statusOk}>
                       <CheckCircle2 size={14} /> OK

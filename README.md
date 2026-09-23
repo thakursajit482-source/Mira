@@ -43,7 +43,7 @@ Mira/
 │   │   ├── roadmap_engine/     # Deterministic insertion and rescheduling engines
 │   │   ├── ai/                 # AI schemas, provider abstraction, mock provider, validator
 │   │   └── main.py             # FastAPI entry point & lifespan handler
-│   └── tests/                  # Pytest test suite (78 tests)
+│   └── tests/                  # Pytest test suite (148 tests)
 ├── frontend/
 │   ├── src/
 │   │   ├── api/                # Centralized typed API client
@@ -161,7 +161,7 @@ For deployment guidelines, refer to [docs/PRODUCTION_CHECKLIST.md](docs/PRODUCTI
 
 ## 🧪 Running Tests
 
-### Backend Tests (147+ tests)
+### Backend Tests (148 tests)
 ```powershell
 python -m pytest backend/tests -v
 ```
@@ -208,4 +208,13 @@ npm run build
   * [x] Production error sanitization (safe generic 500 response, stack traces logged internally)
   * [x] Seed data conditional guardrail (disabled in production)
   * [x] Production checklist and deployment documentation (`docs/PRODUCTION_CHECKLIST.md`)
+* [x] **Phase 12 — Final QA, Deployment & Mira v1.0 Release:**
+  * [x] Comprehensive repository audit & code hygiene
+  * [x] 148 backend unit and integration tests passing
+  * [x] Critical user flows end-to-end verified (Flows A–I)
+  * [x] Alembic migration clean state confirmed (0 drift)
+  * [x] Frontend production bundle optimized (0 TypeScript errors)
+  * [x] Version bumped to v1.0.0 across frontend & backend
+  * [x] Official Release Notes created ([docs/RELEASE_v1.0.md](docs/RELEASE_v1.0.md))
+
 
