@@ -59,6 +59,14 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
             errorMessage = apiErr.detail
               .map((err: { msg?: string; loc?: string[] }) => err.msg || JSON.stringify(err))
               .join(', ');
+          } else if (typeof apiErr.detail === 'object' && apiErr.detail !== null) {
+            // Structured error detail object (e.g. { message: "...", errors: [...] })
+            const detailObj = apiErr.detail as { message?: string; errors?: string[] };
+            if (detailObj.message) {
+              errorMessage = detailObj.errors && detailObj.errors.length > 0
+                ? `${detailObj.message} (${detailObj.errors.join('; ')})`
+                : detailObj.message;
+            }
           }
         }
       } catch {
