@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, PlusCircle, Calendar, RefreshCw, Compass, History } from 'lucide-react';
+import { Sparkles, PlusCircle, Calendar, RefreshCw, Compass, History, CheckCircle2 } from 'lucide-react';
 import { listRoadmaps, getRoadmapDetails, getRoadmapProgress, getRoadmapMomentum } from '../api/roadmaps';
 import { completeTask, uncompleteTask } from '../api/tasks';
 import { Roadmap, RoadmapDetail, RoadmapProgress, RoadmapMomentum, Day } from '../types';
 import { DEV_USER } from '../utils/devUser';
 import { formatDate } from '../utils/formatters';
+import { useToast } from '../context/ToastContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
@@ -22,6 +23,7 @@ import styles from './RoadmapPage.module.css';
 
 export const RoadmapPage: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const currentDayRef = useRef<HTMLDivElement | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -126,6 +128,7 @@ export const RoadmapPage: React.FC = () => {
     try {
       if (currentStatus === 'COMPLETED') {
         await uncompleteTask(taskId);
+        toast.info('Task marked incomplete.');
       } else {
         await completeTask(taskId);
       }
@@ -143,6 +146,20 @@ export const RoadmapPage: React.FC = () => {
         setMomentum(updatedMomentum);
       }
 
+      // Day / Roadmap completion feedback when completing a task
+      if (currentStatus !== 'COMPLETED') {
+        if (updatedProgress.is_completed) {
+          toast.success('Roadmap complete', 'You finished everything you planned.');
+        } else {
+          const targetDay = updatedDetail.days.find((d) => d.tasks?.some((t) => t.id === taskId));
+          if (targetDay && targetDay.tasks && targetDay.tasks.length > 0 && targetDay.tasks.every((t) => t.status === 'COMPLETED')) {
+            toast.success(`Day ${targetDay.day_number} complete`, 'Nice work. Your roadmap is moving forward.');
+          } else {
+            toast.success('Task completed.');
+          }
+        }
+      }
+
       // Also update currently inspected day inside modal if open
       if (selectedDay) {
         const freshDay = updatedDetail.days.find((d) => d.id === selectedDay.id);
@@ -151,8 +168,9 @@ export const RoadmapPage: React.FC = () => {
         }
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to update task status';
+      const msg = err instanceof Error ? err.message : "Couldn't update the task. Try again.";
       setError(msg);
+      toast.error("Couldn't update the task. Try again.");
     } finally {
       setUpdatingTaskIds((prev) => prev.filter((id) => id !== taskId));
     }
@@ -175,14 +193,15 @@ export const RoadmapPage: React.FC = () => {
     );
   }
 
+  // Empty state when user has no roadmaps (Part 6)
   if (!roadmapDetail || roadmaps.length === 0) {
     return (
       <div className="container">
         <EmptyState
           icon={<Sparkles size={32} />}
-          title="No Roadmaps Found"
-          description="You do not have any learning roadmaps yet. Generate your first structured roadmap to begin your journey."
-          actionLabel="Generate Roadmap"
+          title="Nothing planned yet."
+          description="Add a roadmap and Mira will help you turn it into daily progress."
+          actionLabel="Create Roadmap"
           onAction={() => navigate('/create')}
           actionIcon={<PlusCircle size={18} />}
         />
@@ -307,11 +326,55 @@ export const RoadmapPage: React.FC = () => {
         </div>
       </Card>
 
+      {/* Roadmap Completion Experience (Part 14) */}
+      {progress?.is_completed && (
+        <section aria-label="Roadmap Complete" className={styles.roadmapCompletionHero}>
+          <div className={styles.completionLeft}>
+            <CheckCircle2 size={28} className={styles.completionIcon} />
+            <div className={styles.completionText}>
+              <h2 className={styles.completionTitle}>Roadmap complete</h2>
+              <p className={styles.completionDesc}>You finished everything you planned.</p>
+            </div>
+          </div>
+
+          <div className={styles.completionActions}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                document.getElementById('progression-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Review Roadmap
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                document.getElementById('momentum-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              View Progress
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate('/create')}
+              leftIcon={<PlusCircle size={14} />}
+            >
+              Start a New Roadmap
+            </Button>
+          </div>
+        </section>
+      )}
+
       {/* Progress & Momentum Section */}
-      {momentum && <RoadmapMomentumSection momentum={momentum} />}
+      <div id="momentum-section">
+        {momentum && <RoadmapMomentumSection momentum={momentum} />}
+      </div>
 
       {/* Progression Section */}
-      <div className={styles.progressionSection}>
+      <div id="progression-section" className={styles.progressionSection}>
         <div className={styles.progressionHeader}>
           <h2 className={styles.progressionTitle}>Level Progression</h2>
           <p className={styles.progressionSub}>

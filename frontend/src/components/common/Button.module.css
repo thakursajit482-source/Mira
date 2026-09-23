@@ -9,6 +9,19 @@
   white-space: nowrap;
   user-select: none;
   border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
 }
 
 /* Sizes */

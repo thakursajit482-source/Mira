@@ -144,13 +144,22 @@
 
 .mainTextarea:focus {
   outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  border-color: var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
 
 .hintBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+.validationError {
+  color: var(--status-danger);
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .detectedBadge {
@@ -184,8 +193,8 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  border-color: var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
 
 .actions {

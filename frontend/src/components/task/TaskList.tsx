@@ -20,7 +20,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   if (tasks.length === 0) {
     return (
       <div className={styles.emptyList}>
-        <p>No tasks assigned for this day.</p>
+        <p>No tasks planned for today.</p>
       </div>
     );
   }

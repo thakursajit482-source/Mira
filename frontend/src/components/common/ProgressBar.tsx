@@ -32,6 +32,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         aria-valuenow={clampedPercentage}
         aria-valuemin={0}
         aria-valuemax={100}
+        aria-label={label || 'Roadmap completion progress'}
       >
         <div
           className={`${styles.fill} ${styles[variant]}`}

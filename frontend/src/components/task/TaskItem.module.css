@@ -54,6 +54,10 @@
   background-color: var(--bg-card-hover);
 }
 
+.checkbox:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
 .checkbox:focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
@@ -68,12 +72,15 @@
 .checkIcon {
   color: #ffffff;
   stroke-width: 3;
-  animation: popCheck var(--transition-fast) var(--transition-spring);
+  animation: popCheck var(--transition-fast) cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .checkIcon {
     animation: none;
+  }
+  .checkbox:active:not(:disabled) {
+    transform: none;
   }
 }
 

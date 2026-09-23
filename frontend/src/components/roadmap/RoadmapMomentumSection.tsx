@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Flame,
   CheckCircle2,
@@ -9,6 +9,7 @@ import {
 import { RoadmapMomentum, Milestone, RecentProgressActivity } from '../../types';
 import { Badge } from '../common/Badge';
 import { formatMinutes, formatDate, formatRelativeTime } from '../../utils/formatters';
+import { useToast } from '../../context/ToastContext';
 import styles from './RoadmapMomentumSection.module.css';
 
 interface RoadmapMomentumSectionProps {
@@ -17,6 +18,65 @@ interface RoadmapMomentumSectionProps {
 
 export const RoadmapMomentumSection: React.FC<RoadmapMomentumSectionProps> = ({ momentum }) => {
   const { completion, tasks, time, streak, momentum: momMetrics, milestones, recent_activity } = momentum;
+  const toast = useToast();
+  const isInitialMount = useRef(true);
+  const [newlyAchievedIds, setNewlyAchievedIds] = useState<string[]>([]);
+
+  // Safe milestone celebration tracking (Part 4)
+  useEffect(() => {
+    if (!momentum.roadmap_id) return;
+    const storageKey = `mira_seen_milestones_${momentum.roadmap_id}`;
+
+    let seenIds: Set<string>;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      seenIds = stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      seenIds = new Set();
+    }
+
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      // On initial load, record currently achieved milestones into seenIds
+      // so we don't spam celebrations for historic achievements
+      let changed = false;
+      milestones.forEach((m) => {
+        if (m.achieved && !seenIds.has(m.id)) {
+          seenIds.add(m.id);
+          changed = true;
+        }
+      });
+      if (changed) {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(Array.from(seenIds)));
+        } catch {
+          // ignore localStorage write errors
+        }
+      }
+      return;
+    }
+
+    // Subsequent updates: detect new unachieved -> achieved transitions during this session!
+    const newlyAchieved: Milestone[] = [];
+    milestones.forEach((m) => {
+      if (m.achieved && !seenIds.has(m.id)) {
+        newlyAchieved.push(m);
+        seenIds.add(m.id);
+      }
+    });
+
+    if (newlyAchieved.length > 0) {
+      newlyAchieved.forEach((m) => {
+        toast.success(`Milestone Reached: ${m.title}`, m.description);
+      });
+      setNewlyAchievedIds((prev) => [...prev, ...newlyAchieved.map((m) => m.id)]);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(seenIds)));
+      } catch {
+        // ignore localStorage write errors
+      }
+    }
+  }, [momentum.roadmap_id, milestones, toast]);
 
   // Determine momentum badge variant
   const getMomentumBadgeVariant = (status: string) => {
@@ -167,7 +227,9 @@ export const RoadmapMomentumSection: React.FC<RoadmapMomentumSectionProps> = ({ 
         <div className={styles.cardHeader}>
           <span className={styles.cardLabel}>Key Milestones</span>
           <span className={styles.sectionSubtitle}>
-            {milestones.filter((m) => m.achieved).length} of {milestones.length} reached
+            {milestones.filter((m) => m.achieved).length > 0
+              ? `${milestones.filter((m) => m.achieved).length} of ${milestones.length} reached`
+              : 'Milestones will appear as you complete your roadmap.'}
           </span>
         </div>
 
@@ -183,7 +245,12 @@ export const RoadmapMomentumSection: React.FC<RoadmapMomentumSectionProps> = ({ 
                 <Circle size={18} className={styles.milestoneIconPending} />
               )}
               <div className={styles.milestoneDetails}>
-                <span className={styles.milestoneTitle}>{m.title}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span className={styles.milestoneTitle}>{m.title}</span>
+                  {newlyAchievedIds.includes(m.id) && (
+                    <Badge variant="completed" size="sm">New</Badge>
+                  )}
+                </div>
                 <span className={styles.milestoneDesc}>{m.description}</span>
                 {m.achieved && m.achieved_at && (
                   <span className={styles.milestoneDate}>Achieved {formatDate(m.achieved_at)}</span>
@@ -195,13 +262,13 @@ export const RoadmapMomentumSection: React.FC<RoadmapMomentumSectionProps> = ({ 
       </div>
 
       {/* Recent Progress Activity */}
-      {recent_activity.length > 0 && (
-        <div className={styles.activityCard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardLabel}>Recent Progress</span>
-            <span className={styles.sectionSubtitle}>Latest actions</span>
-          </div>
+      <div className={styles.activityCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.cardLabel}>Recent Progress</span>
+          <span className={styles.sectionSubtitle}>Latest actions</span>
+        </div>
 
+        {recent_activity.length > 0 ? (
           <div className={styles.activityList}>
             {recent_activity.map((act: RecentProgressActivity) => (
               <div key={act.id} className={styles.activityItem}>
@@ -216,8 +283,10 @@ export const RoadmapMomentumSection: React.FC<RoadmapMomentumSectionProps> = ({ 
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className={styles.emptyActivity}>No progress activity yet.</p>
+        )}
+      </div>
     </section>
   );
 };

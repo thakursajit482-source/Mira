@@ -338,6 +338,9 @@ export const CreateRoadmapPage: React.FC = () => {
                         'Paste your syllabus, topic list, or day-by-day outline.'
                       )}
                     </span>
+                    {error && !content.trim() && (
+                      <span className={styles.validationError}>Content is required to plan.</span>
+                    )}
                   </div>
                 </div>
 

@@ -238,3 +238,52 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Roadmap Completion Hero (Part 14) */
+.roadmapCompletionHero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--status-completed-bg);
+  border: 1px solid var(--status-completed-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.completionLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.completionIcon {
+  color: var(--status-completed);
+  flex-shrink: 0;
+}
+
+.completionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.completionTitle {
+  font-size: 1.125rem;
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.completionDesc {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.completionActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}

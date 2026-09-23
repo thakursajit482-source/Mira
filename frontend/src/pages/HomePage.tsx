@@ -42,6 +42,7 @@ import { ErrorBanner } from '../components/common/ErrorBanner';
 import { TaskList } from '../components/task/TaskList';
 import { Button } from '../components/common/Button';
 import { ReschedulePreviewModal } from '../components/roadmap/ReschedulePreviewModal';
+import { useToast } from '../context/ToastContext';
 import styles from './HomePage.module.css';
 
 function getGreeting(): string {
@@ -53,6 +54,7 @@ function getGreeting(): string {
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +121,7 @@ export const HomePage: React.FC = () => {
     try {
       if (currentStatus === 'COMPLETED') {
         await uncompleteTask(taskId);
+        toast.info('Task marked incomplete.');
       } else {
         await completeTask(taskId);
       }
@@ -137,9 +140,24 @@ export const HomePage: React.FC = () => {
       if (updatedMomentum) {
         setMomentum(updatedMomentum);
       }
+
+      // Day / Roadmap completion feedback when completing a task
+      if (currentStatus !== 'COMPLETED') {
+        if (updatedProgress.is_completed) {
+          toast.success('Roadmap complete', 'You finished everything you planned.');
+        } else {
+          const targetDay = updatedDetail.days.find((d) => d.tasks?.some((t) => t.id === taskId));
+          if (targetDay && targetDay.tasks && targetDay.tasks.length > 0 && targetDay.tasks.every((t) => t.status === 'COMPLETED')) {
+            toast.success(`Day ${targetDay.day_number} complete`, 'Nice work. Your roadmap is moving forward.');
+          } else {
+            toast.success('Task completed.');
+          }
+        }
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to update task status';
+      const msg = err instanceof Error ? err.message : "Couldn't update the task. Try again.";
       setError(msg);
+      toast.error("Couldn't update the task. Try again.");
     } finally {
       setUpdatingTaskIds((prev) => prev.filter((id) => id !== taskId));
     }
@@ -187,14 +205,14 @@ export const HomePage: React.FC = () => {
     );
   }
 
-  // Empty state when user has no roadmaps
+  // Empty state when user has no roadmaps (Part 6)
   if (!activeRoadmap || !roadmapDetail || !currentDay) {
     return (
       <div className="container">
         <EmptyState
           icon={<Sparkles size={32} />}
-          title="No Roadmap Yet"
-          description="Start with a goal you've already decided to pursue. Mira will help you break it down into daily progress."
+          title="Nothing planned yet."
+          description="Add a roadmap and Mira will help you turn it into daily progress."
           actionLabel="Create Roadmap"
           onAction={() => navigate('/create')}
           actionIcon={<PlusCircle size={18} />}
@@ -206,6 +224,11 @@ export const HomePage: React.FC = () => {
   const tasks = currentDay.tasks || [];
   const completedTasksCount = tasks.filter((t) => t.status === 'COMPLETED').length;
   const isDayCompleted = currentDay.status === 'COMPLETED' || (tasks.length > 0 && completedTasksCount === tasks.length);
+
+  const isRoadmapCompleted = Boolean(
+    progress?.is_completed ||
+      (progress && progress.completed_days >= progress.total_days && progress.total_days > 0)
+  );
 
   const remainingMinutes = tasks
     .filter((t) => t.status !== 'COMPLETED')
@@ -250,10 +273,20 @@ export const HomePage: React.FC = () => {
   return (
     <div className="container">
       <div className={styles.dashboard}>
-        {/* LEVEL 1: Calm Contextual Greeting */}
+        {/* LEVEL 1: Calm Contextual Greeting with Motivational Context */}
         <header className={styles.greetingHeader}>
           <h1 className={styles.greetingTitle}>{greeting}.</h1>
-          <p className={styles.greetingSubtitle}>Let&apos;s make progress today.</p>
+          <p className={styles.greetingSubtitle}>
+            {isRoadmapCompleted
+              ? 'Roadmap complete.'
+              : momentum?.streak && momentum.streak.current_days > 1
+              ? `Your streak is ${momentum.streak.current_days} days.`
+              : isDayCompleted
+              ? `Day ${currentDay.day_number} is complete.`
+              : progress && progress.progress_percentage > 0
+              ? `You’ve completed ${Math.round(progress.progress_percentage)}% of this roadmap.`
+              : "Let's make progress today."}
+          </p>
         </header>
 
         {/* LEVEL 2: Today's Focus (Centerpiece) */}
@@ -411,34 +444,77 @@ export const HomePage: React.FC = () => {
                 <div className={styles.dayCompleteIcon}>
                   <CheckCircle2 size={36} className={styles.checkDoneIcon} />
                 </div>
-                <div className={styles.dayCompleteMessage}>
-                  <h3 className={styles.dayCompleteTitle}>Day Complete ✓</h3>
-                  <p className={styles.dayCompleteDesc}>
-                    You&apos;ve finished today&apos;s work. Ready to see what comes next?
-                  </p>
-                </div>
+                {isRoadmapCompleted ? (
+                  <>
+                    <div className={styles.dayCompleteMessage}>
+                      <h3 className={styles.dayCompleteTitle}>Roadmap complete</h3>
+                      <p className={styles.dayCompleteDesc}>
+                        You finished everything you planned.
+                      </p>
+                    </div>
 
-                <div className={styles.dayCompleteActions}>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => navigate('/roadmap')}
-                    leftIcon={<Map size={16} />}
-                    rightIcon={<ArrowRight size={14} />}
-                  >
-                    Continue to Roadmap
-                  </Button>
+                    <div className={styles.dayCompleteActions}>
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={() => navigate('/roadmap')}
+                        leftIcon={<Map size={16} />}
+                      >
+                        Review Roadmap
+                      </Button>
 
-                  <button
-                    type="button"
-                    className={styles.toggleTasksBtn}
-                    onClick={() => setShowCompletedTasks((prev) => !prev)}
-                    aria-expanded={showCompletedTasks}
-                  >
-                    <span>{showCompletedTasks ? 'Hide' : 'Review'} today&apos;s tasks ({tasks.length})</span>
-                    {showCompletedTasks ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </button>
-                </div>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={() => navigate('/create')}
+                        leftIcon={<PlusCircle size={16} />}
+                      >
+                        Start a New Roadmap
+                      </Button>
+
+                      <button
+                        type="button"
+                        className={styles.toggleTasksBtn}
+                        onClick={() => setShowCompletedTasks((prev) => !prev)}
+                        aria-expanded={showCompletedTasks}
+                      >
+                        <span>{showCompletedTasks ? 'Hide' : 'Review'} tasks ({tasks.length})</span>
+                        {showCompletedTasks ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.dayCompleteMessage}>
+                      <h3 className={styles.dayCompleteTitle}>Day {currentDay.day_number} complete</h3>
+                      <p className={styles.dayCompleteDesc}>
+                        Nice work. Your roadmap is moving forward.
+                      </p>
+                    </div>
+
+                    <div className={styles.dayCompleteActions}>
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={() => navigate('/roadmap')}
+                        leftIcon={<Map size={16} />}
+                        rightIcon={<ArrowRight size={14} />}
+                      >
+                        Continue to Roadmap
+                      </Button>
+
+                      <button
+                        type="button"
+                        className={styles.toggleTasksBtn}
+                        onClick={() => setShowCompletedTasks((prev) => !prev)}
+                        aria-expanded={showCompletedTasks}
+                      >
+                        <span>{showCompletedTasks ? 'Hide' : 'Review'} today&apos;s tasks ({tasks.length})</span>
+                        {showCompletedTasks ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+                    </div>
+                  </>
+                )}
 
                 {showCompletedTasks && (
                   <div className={styles.completedTasksDrawer}>
