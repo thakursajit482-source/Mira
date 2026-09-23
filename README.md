@@ -106,8 +106,9 @@ Mira/
    ```powershell
    python -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
    ```
-   * API Documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-   * Health Endpoint: [http://127.0.0.1:8000/api/v1/health](http://127.0.0.1:8000/api/v1/health)
+   * API Documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) *(disabled by default in production)*
+   * Liveness Probe: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) or `/api/v1/health`
+   * Readiness Probe: [http://127.0.0.1:8000/ready](http://127.0.0.1:8000/ready) or `/api/v1/ready`
 
 ---
 
@@ -144,9 +145,23 @@ This allows immediate roadmap generation and testing from the web UI without man
 
 ---
 
+## 🔒 Production Readiness & Security
+
+Mira includes enterprise-grade hardening for production deployments:
+* **Separated Health Probes**: `/health` (process liveness) and `/ready` (database connectivity verification via active ping).
+* **Security Headers**: Standard headers applied across all responses (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`).
+* **Safe Error Handling**: Global exception middleware sanitizes 500 errors in production so internal stack traces, paths, and queries are never leaked.
+* **Database Connection Pooling**: Built-in connection pool (`DATABASE_POOL_SIZE`, `DATABASE_MAX_OVERFLOW`, `DATABASE_POOL_RECYCLE`, `pool_pre_ping=True`) for high-concurrency PostgreSQL deployments.
+* **Structured Logging**: Timestamped component-level logging with configurable `LOG_LEVEL`.
+* **CORS Guardrails**: Validation for CORS origins with credentials RFC compliance.
+
+For deployment guidelines, refer to [docs/PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md).
+
+---
+
 ## 🧪 Running Tests
 
-### Backend Tests
+### Backend Tests (147+ tests)
 ```powershell
 python -m pytest backend/tests -v
 ```
@@ -175,3 +190,22 @@ npm run build
 * [x] **Phase 7 — AI-Assisted Roadmap Generation:** Provider abstraction, mock provider, strict output validation.
 * [x] **Phase 8 — Frontend Foundation & Roadmap UI:** React/TypeScript web app, level progression UI, task interactions.
 * [x] **Phase 9 — Testing, Hardening & Deployment Readiness:** Comprehensive test coverage, security review, clean git hygiene.
+* [x] **Phase 10 — Advanced Workload & User Experience:**
+  * [x] 10.1 Workload Analysis & Capacity Signals
+  * [x] 10.2 Progress & Momentum Visuals
+  * [x] 10.3 Timeline & Historical Context
+  * [x] 10.4 Active Focus Modes
+  * [x] 10.5 Dynamic Day Rebalancing
+  * [x] 10.6 Roadmap Milestones
+  * [x] 10.7 Polish + Motivation Layer
+  * [x] 10.8 Notifications & Reminder System
+  * [x] 10.9 Settings, Preferences & Account Experience
+* [x] **Phase 11 — Production Readiness, Security & Performance:**
+  * [x] Environment-aware configuration & docs gating (`ENVIRONMENT=production`)
+  * [x] Database connection pooling (`pool_size`, `max_overflow`, `pool_recycle`, `pool_pre_ping`)
+  * [x] Liveness (`/health`) and Readiness (`/ready`) separated health probes
+  * [x] HTTP Security headers middleware (`nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`)
+  * [x] Production error sanitization (safe generic 500 response, stack traces logged internally)
+  * [x] Seed data conditional guardrail (disabled in production)
+  * [x] Production checklist and deployment documentation (`docs/PRODUCTION_CHECKLIST.md`)
+
