@@ -332,3 +332,24 @@ def test_invalid_roadmap_status_rejected(client: TestClient, sample_user: User):
     }
     response = client.post("/api/v1/roadmaps", json=payload)
     assert response.status_code == 422
+
+
+# 18. Nonexistent roadmap details returns 404
+def test_get_nonexistent_roadmap_details_returns_404(client: TestClient):
+    resp = client.get("/api/v1/roadmaps/99999/details")
+    assert resp.status_code == 404
+    assert "Roadmap with id 99999 not found" in resp.json()["detail"]
+
+
+# 19. Update nonexistent roadmap returns 404
+def test_update_nonexistent_roadmap_returns_404(client: TestClient):
+    resp = client.patch("/api/v1/roadmaps/99999", json={"title": "Nonexistent"})
+    assert resp.status_code == 404
+    assert "Roadmap with id 99999 not found" in resp.json()["detail"]
+
+
+# 20. Delete nonexistent roadmap returns 404
+def test_delete_nonexistent_roadmap_returns_404(client: TestClient):
+    resp = client.delete("/api/v1/roadmaps/99999")
+    assert resp.status_code == 404
+    assert "Roadmap with id 99999 not found" in resp.json()["detail"]

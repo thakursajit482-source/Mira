@@ -411,3 +411,40 @@ def test_ai_layer_does_not_directly_mutate_database(test_db: Session):
     assert test_db.query(Task).count() == initial_tasks_count
     assert test_db.query(RoadmapVersion).count() == initial_versions_count
     assert test_db.query(RoadmapChange).count() == initial_changes_count
+
+
+def test_api_generate_roadmap_single_day_boundary(client: TestClient, sample_user: User):
+    """Verify generating a roadmap with minimum duration (1 day)."""
+    payload = {
+        "user_id": sample_user.id,
+        "goal": "Fast Crash Course",
+        "target_duration_days": 1,
+        "daily_available_minutes": 60,
+    }
+    resp = client.post("/api/v1/roadmaps/generate", json=payload)
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["target_duration_days"] == 1
+    assert len(data["days"]) == 1
+    assert data["days"][0]["day_number"] == 1
+    assert data["days"][0]["status"] == "CURRENT"
+    assert len(data["days"][0]["tasks"]) >= 1
+
+
+def test_api_generate_roadmap_with_daily_capacity_override_and_context(client: TestClient, sample_user: User):
+    """Verify that daily_available_minutes override and context are respected."""
+    payload = {
+        "user_id": sample_user.id,
+        "goal": "Python Data Structures",
+        "target_duration_days": 3,
+        "daily_available_minutes": 45,
+        "context": "Focus only on lists and dicts",
+    }
+    resp = client.post("/api/v1/roadmaps/generate", json=payload)
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["target_duration_days"] == 3
+    assert len(data["days"]) == 3
+    for d in data["days"]:
+        day_total = sum(t["estimated_minutes"] for t in d["tasks"])
+        assert day_total <= 45
