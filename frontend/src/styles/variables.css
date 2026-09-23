@@ -39,9 +39,21 @@
   --status-locked-bg: rgba(71, 85, 105, 0.15);
   --status-locked-border: rgba(71, 85, 105, 0.25);
 
+  --status-at-risk: #f97316;
+  --status-at-risk-bg: rgba(249, 115, 22, 0.12);
+  --status-at-risk-border: rgba(249, 115, 22, 0.35);
+
+  --status-skipped: #64748b;
+  --status-skipped-bg: rgba(100, 116, 139, 0.12);
+  --status-skipped-border: rgba(100, 116, 139, 0.3);
+
   --status-danger: #ef4444;
   --status-danger-bg: rgba(239, 68, 68, 0.12);
   --status-danger-border: rgba(239, 68, 68, 0.3);
+
+  /* Shimmer / Skeleton */
+  --shimmer-base: #141824;
+  --shimmer-highlight: #1f2638;
 
   /* Brand Accents */
   --accent-primary: #6366f1;

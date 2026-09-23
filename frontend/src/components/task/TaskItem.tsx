@@ -60,6 +60,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           </div>
 
           <div className={styles.meta}>
+            {task.category && (
+              <span className={styles.categoryBadge}>{task.category}</span>
+            )}
+
             <span className={styles.timeBadge}>
               <Clock size={12} />
               <span>{formatMinutes(task.estimated_minutes)}</span>

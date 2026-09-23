@@ -2,7 +2,7 @@
 
 export type RoadmapStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAUSED' | 'ARCHIVED';
 
-export type DayStatus = 'LOCKED' | 'CURRENT' | 'IN_PROGRESS' | 'COMPLETED';
+export type DayStatus = 'LOCKED' | 'CURRENT' | 'IN_PROGRESS' | 'COMPLETED' | 'AT_RISK' | 'SKIPPED';
 
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
 
@@ -14,6 +14,8 @@ export interface Task {
   order_index: number;
   estimated_minutes: number;
   status: TaskStatus;
+  is_completed?: boolean;
+  category?: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;

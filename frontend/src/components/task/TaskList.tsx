@@ -37,8 +37,8 @@ export const TaskList: React.FC<TaskListProps> = ({
           <span className={styles.countText}>
             <strong>{completedCount}</strong> of <strong>{tasks.length}</strong> tasks completed
           </span>
-          <span className={styles.remainingText}>
-            {remainingMinutes > 0 ? `${formatMinutes(remainingMinutes)} remaining` : 'All tasks done'}
+          <span className={`${styles.remainingText} ${remainingMinutes === 0 ? styles.remainingDone : ''}`}>
+            {remainingMinutes > 0 ? `${formatMinutes(remainingMinutes)} remaining` : 'All tasks done ✓'}
           </span>
         </div>
       )}

@@ -67,6 +67,24 @@
   background-color: var(--text-muted);
 }
 
+.at-risk {
+  background-color: var(--status-at-risk-bg);
+  color: var(--status-at-risk);
+  border-color: var(--status-at-risk-border);
+}
+.at-risk .dot {
+  background-color: var(--status-at-risk);
+}
+
+.skipped {
+  background-color: var(--status-skipped-bg);
+  color: var(--status-skipped);
+  border-color: var(--status-skipped-border);
+}
+.skipped .dot {
+  background-color: var(--status-skipped);
+}
+
 .neutral {
   background-color: var(--bg-tertiary);
   color: var(--text-secondary);

@@ -6,6 +6,8 @@ export type BadgeVariant =
   | 'current'
   | 'in-progress'
   | 'locked'
+  | 'at-risk'
+  | 'skipped'
   | 'neutral'
   | 'danger';
 

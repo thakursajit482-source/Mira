@@ -1,9 +1,13 @@
 .container {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-4);
   width: 100%;
   position: relative;
+  transition: transform var(--transition-fast);
+}
+
+.container:not(.currentContainer) {
   cursor: pointer;
   user-select: none;
 }
@@ -19,6 +23,7 @@
   transition: all var(--transition-normal);
   z-index: 2;
   border: 2px solid transparent;
+  margin-top: var(--space-2);
 }
 
 .markerCompleted {
@@ -41,6 +46,18 @@
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
 }
 
+.markerAtRisk {
+  background-color: var(--status-at-risk);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+}
+
+.markerSkipped {
+  background-color: var(--status-skipped);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(107, 114, 128, 0.3);
+}
+
 .markerLocked {
   background-color: var(--bg-tertiary);
   color: var(--text-muted);
@@ -55,82 +72,251 @@
   stroke-width: 2.5;
 }
 
+.iconAtRisk,
+.iconSkipped,
+.iconPlay,
+.iconLock {
+  stroke-width: 2;
+}
+
+/* Card Common */
 .card {
   flex: 1;
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-5);
   transition: all var(--transition-fast);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
 }
 
-.container:hover .card {
+/* Hover for compact nodes */
+.container:not(.currentContainer):hover .card {
   background-color: var(--bg-card-hover);
   border-color: var(--border-medium);
   transform: translateX(4px);
 }
 
-.currentContainer .card {
+.container:not(.currentContainer):focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-lg);
+}
+
+/* Current Day Featured Card */
+.currentContainer {
+  margin: var(--space-2) 0;
+}
+
+.currentContainer .marker {
+  width: 48px;
+  height: 48px;
+  margin-top: var(--space-3);
+  margin-left: -2px;
+}
+
+.cardCurrent {
   border-color: var(--status-current-border);
   box-shadow: var(--status-current-glow);
   background-color: var(--bg-card);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.cardCompleted {
-  border-color: rgba(16, 185, 129, 0.25);
-  background-color: rgba(19, 23, 36, 0.6);
-}
-
-.cardLocked {
-  opacity: 0.8;
-}
-
-.header {
+.activeHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .titleArea {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--space-2);
+}
+
+.tagRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .levelTag {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--accent-light);
 }
 
-.dayTitle {
-  font-size: 1rem;
-  font-weight: 700;
+.activeDayTitle {
+  font-size: 1.25rem;
+  font-weight: 750;
   color: var(--text-primary);
   line-height: 1.3;
 }
 
-.footer {
-  display: flex;
-  justify-content: space-between;
+.inspectButton {
+  display: inline-flex;
   align-items: center;
-  font-size: 0.8125rem;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--text-secondary);
-  border-top: 1px solid var(--border-subtle);
-  padding-top: var(--space-2);
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
-.taskCount strong {
+.inspectButton:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+.activeMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.activeMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.activeMetaItem strong {
   color: var(--text-primary);
 }
 
-.duration {
-  font-family: var(--font-mono);
+.activeTasksWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.noTasks {
+  font-size: 0.875rem;
   color: var(--text-muted);
+  font-style: italic;
+  padding: var(--space-3) 0;
+}
+
+/* Compact Nodes */
+.cardCompleted {
+  padding: var(--space-3) var(--space-4);
+  background-color: rgba(19, 23, 36, 0.65);
+  border-color: rgba(16, 185, 129, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cardLocked {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-card);
+  opacity: 0.75;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cardAtRisk {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-card);
+  border-color: var(--status-at-risk-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cardSkipped {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-card);
+  opacity: 0.7;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cardInProgress {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-card);
+  border-color: var(--status-in-progress-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.compactHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.compactTitleArea {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.compactLevelTag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.compactDayTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compactBadgeArea {
+  flex-shrink: 0;
+}
+
+.compactFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.compactTaskCount strong {
+  color: var(--text-secondary);
+}
+
+.compactDuration {
+  font-family: var(--font-mono);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markerCurrent {
+    animation: none;
+  }
+
+  .container:not(.currentContainer):hover .card {
+    transform: none;
+  }
 }

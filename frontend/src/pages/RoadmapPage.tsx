@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, PlusCircle, Calendar, RefreshCw } from 'lucide-react';
+import { Sparkles, PlusCircle, Calendar, RefreshCw, Compass } from 'lucide-react';
 import { listRoadmaps, getRoadmapDetails, getRoadmapProgress } from '../api/roadmaps';
 import { completeTask, uncompleteTask } from '../api/tasks';
 import { Roadmap, RoadmapDetail, RoadmapProgress, Day } from '../types';
@@ -10,7 +10,7 @@ import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { ProgressBar } from '../components/common/ProgressBar';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { RoadmapSkeleton } from '../components/common/Skeleton';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorBanner } from '../components/common/ErrorBanner';
 import { RoadmapNode } from '../components/roadmap/RoadmapNode';
@@ -20,6 +20,7 @@ import styles from './RoadmapPage.module.css';
 
 export const RoadmapPage: React.FC = () => {
   const navigate = useNavigate();
+  const currentDayRef = useRef<HTMLDivElement | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +90,13 @@ export const RoadmapPage: React.FC = () => {
     }
   };
 
+  // Jump smoothly to current day
+  const handleJumpToCurrentDay = () => {
+    if (currentDayRef.current) {
+      currentDayRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   // Open day detail modal
   const handleOpenDayModal = (day: Day) => {
     setSelectedDay(day);
@@ -100,7 +108,7 @@ export const RoadmapPage: React.FC = () => {
     setSelectedDay(null);
   };
 
-  // Toggle task completion
+  // Toggle task completion (used by both inline current day card and modal)
   const handleToggleTask = async (taskId: number, currentStatus: string) => {
     if (!selectedRoadmapId) return;
 
@@ -122,7 +130,7 @@ export const RoadmapPage: React.FC = () => {
       setRoadmapDetail(updatedDetail);
       setProgress(updatedProgress);
 
-      // Also update currently inspected day inside modal
+      // Also update currently inspected day inside modal if open
       if (selectedDay) {
         const freshDay = updatedDetail.days.find((d) => d.id === selectedDay.id);
         if (freshDay) {
@@ -137,8 +145,13 @@ export const RoadmapPage: React.FC = () => {
     }
   };
 
+  // Layout-stable skeleton loading state
   if (isLoading && !roadmapDetail) {
-    return <LoadingSpinner label="Loading roadmap progression..." fullPage />;
+    return (
+      <div className="container">
+        <RoadmapSkeleton />
+      </div>
+    );
   }
 
   if (error) {
@@ -153,7 +166,7 @@ export const RoadmapPage: React.FC = () => {
     return (
       <div className="container">
         <EmptyState
-          icon={<Sparkles size={28} />}
+          icon={<Sparkles size={32} />}
           title="No Roadmaps Found"
           description="You do not have any learning roadmaps yet. Generate your first structured roadmap to begin your journey."
           actionLabel="Generate Roadmap"
@@ -165,6 +178,7 @@ export const RoadmapPage: React.FC = () => {
   }
 
   const days = [...roadmapDetail.days].sort((a, b) => a.day_number - b.day_number);
+  const remainingDays = progress ? Math.max(0, progress.total_days - progress.completed_days) : 0;
 
   return (
     <div className="container">
@@ -174,59 +188,95 @@ export const RoadmapPage: React.FC = () => {
           <div className={styles.titleGroup}>
             <div className={styles.tagRow}>
               <span className={styles.roadmapTag}>Level Map</span>
-              <Badge variant="current" dot>
-                {progress?.is_completed ? 'Finished' : 'In Progress'}
+              <Badge
+                variant={progress?.is_completed ? 'completed' : 'current'}
+                dot
+              >
+                {progress?.is_completed ? 'Completed' : 'Active Plan'}
               </Badge>
             </div>
             <h1 className={styles.roadmapTitle}>{roadmapDetail.title}</h1>
-            <p className={styles.roadmapDesc}>{roadmapDetail.description}</p>
+            {roadmapDetail.description && (
+              <p className={styles.roadmapDesc}>{roadmapDetail.description}</p>
+            )}
           </div>
 
-          {/* Roadmap switcher if user has multiple */}
-          {roadmaps.length > 1 && (
-            <div className={styles.switcher}>
-              <label htmlFor="roadmap-select" className={styles.switcherLabel}>
-                Switch Plan:
-              </label>
-              <select
-                id="roadmap-select"
-                className={styles.selectInput}
-                value={selectedRoadmapId || ''}
-                onChange={(e) => handleSelectRoadmap(Number(e.target.value))}
-              >
-                {roadmaps.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.title} ({r.target_duration_days}d)
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Action & Switcher Controls */}
+          <div className={styles.headerActions}>
+            {roadmaps.length > 1 && (
+              <div className={styles.switcher}>
+                <label htmlFor="roadmap-select" className={styles.switcherLabel}>
+                  Switch Plan:
+                </label>
+                <select
+                  id="roadmap-select"
+                  className={styles.selectInput}
+                  value={selectedRoadmapId || ''}
+                  onChange={(e) => handleSelectRoadmap(Number(e.target.value))}
+                >
+                  {roadmaps.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.title} ({r.target_duration_days}d)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleJumpToCurrentDay}
+              leftIcon={<Compass size={14} />}
+              title="Scroll directly to today's active level"
+            >
+              Jump to Current Day
+            </Button>
+          </div>
         </div>
 
-        {/* Progress & Meta */}
-        <div className={styles.headerBottom}>
-          <div className={styles.progressArea}>
-            {progress && (
-              <ProgressBar
-                percentage={progress.progress_percentage}
-                label={`${progress.completed_days} of ${progress.total_days} Days Completed`}
-                size="md"
-                variant={progress.is_completed ? 'success' : 'primary'}
-              />
-            )}
+        {/* Big Motivating Progress Section */}
+        <div className={styles.progressCard}>
+          <div className={styles.progressMetrics}>
+            <div className={styles.percentDisplay}>
+              <span className={styles.percentNumber}>
+                {progress ? Math.round(progress.progress_percentage) : 0}%
+              </span>
+              <span className={styles.percentLabel}>Completed</span>
+            </div>
+
+            <div className={styles.statCounters}>
+              <div className={styles.statBox}>
+                <span className={styles.statValue}>
+                  {progress ? progress.completed_days : 0} / {progress ? progress.total_days : 0}
+                </span>
+                <span className={styles.statLabel}>Days Finished</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statValue}>{remainingDays}</span>
+                <span className={styles.statLabel}>Days Remaining</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.progressBarWrapper}>
+            <ProgressBar
+              percentage={progress ? progress.progress_percentage : 0}
+              size="lg"
+              variant={progress?.is_completed ? 'success' : 'primary'}
+            />
           </div>
 
           <div className={styles.metaRow}>
             <span className={styles.metaItem}>
-              <Calendar size={14} />
+              <Calendar size={13} />
               <span>Created {formatDate(roadmapDetail.created_at)}</span>
             </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={loadRoadmaps}
-              leftIcon={<RefreshCw size={14} />}
+              leftIcon={<RefreshCw size={13} />}
             >
               Refresh
             </Button>
@@ -239,16 +289,21 @@ export const RoadmapPage: React.FC = () => {
         <div className={styles.progressionHeader}>
           <h2 className={styles.progressionTitle}>Level Progression</h2>
           <p className={styles.progressionSub}>
-            Click any level node to view daily tasks and track progress.
+            Complete today’s active tasks below to advance to your next milestone.
           </p>
         </div>
 
-        {/* Vertical Nodes List */}
+        {/* Vertical Level Progression Path */}
         <div className={styles.nodesList}>
           {days.map((day, index) => {
             const isLast = index === days.length - 1;
             const isCurrent =
               progress?.first_incomplete_day === day.day_number || day.status === 'CURRENT';
+
+            const nextDay = !isLast ? days[index + 1] : null;
+            const nextIsCurrent =
+              nextDay &&
+              (progress?.first_incomplete_day === nextDay.day_number || nextDay.status === 'CURRENT');
 
             return (
               <React.Fragment key={day.id}>
@@ -256,10 +311,14 @@ export const RoadmapPage: React.FC = () => {
                   day={day}
                   onClick={() => handleOpenDayModal(day)}
                   isCurrent={isCurrent}
+                  onToggleTask={handleToggleTask}
+                  updatingTaskIds={updatingTaskIds}
+                  nodeRef={isCurrent ? currentDayRef : undefined}
                 />
                 {!isLast && (
                   <RoadmapPath
                     isCompleted={day.status === 'COMPLETED'}
+                    isActive={day.status === 'COMPLETED' && Boolean(nextIsCurrent)}
                   />
                 )}
               </React.Fragment>

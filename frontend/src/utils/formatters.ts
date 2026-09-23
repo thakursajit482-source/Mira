@@ -47,6 +47,10 @@ export function getDayStatusLabel(status: DayStatus): string {
       return 'In Progress';
     case 'LOCKED':
       return 'Locked';
+    case 'AT_RISK':
+      return 'At Risk';
+    case 'SKIPPED':
+      return 'Skipped';
     default:
       return status;
   }

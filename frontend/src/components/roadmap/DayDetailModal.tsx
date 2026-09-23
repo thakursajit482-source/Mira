@@ -57,6 +57,10 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
         return <Badge variant="current" dot>Current Level</Badge>;
       case 'IN_PROGRESS':
         return <Badge variant="in-progress" dot>In Progress</Badge>;
+      case 'AT_RISK':
+        return <Badge variant="at-risk" dot>At Risk</Badge>;
+      case 'SKIPPED':
+        return <Badge variant="skipped">Skipped</Badge>;
       case 'LOCKED':
         return <Badge variant="locked">Locked</Badge>;
       default:
@@ -65,7 +69,13 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
+    <div
+      className={styles.overlay}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="day-modal-title"
+    >
       <div
         className={styles.modal}
         onClick={(e) => e.stopPropagation()}
@@ -77,7 +87,9 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
               <span className={styles.levelTag}>Day {day.day_number}</span>
               {getStatusBadge()}
             </div>
-            <h2 className={styles.title}>{day.title || `Day ${day.day_number}`}</h2>
+            <h2 id="day-modal-title" className={styles.title}>
+              {day.title || `Day ${day.day_number}`}
+            </h2>
             <div className={styles.meta}>
               <span className={styles.metaItem}>
                 <Clock size={14} />
@@ -93,6 +105,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
           </div>
 
           <button
+            type="button"
             className={styles.closeButton}
             onClick={onClose}
             aria-label="Close modal"
@@ -114,7 +127,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
 
         {/* Footer */}
         <div className={styles.footer}>
-          <button className={styles.doneButton} onClick={onClose}>
+          <button type="button" className={styles.doneButton} onClick={onClose}>
             Done
           </button>
         </div>

@@ -163,13 +163,13 @@ export const HomePage: React.FC = () => {
         </div>
 
         <Button
-          variant="secondary"
-          size="sm"
+          variant="primary"
+          size="md"
           onClick={() => navigate('/roadmap')}
           leftIcon={<Map size={16} />}
           rightIcon={<ArrowRight size={14} />}
         >
-          View Full Roadmap
+          Continue Roadmap
         </Button>
       </div>
 
@@ -195,8 +195,10 @@ export const HomePage: React.FC = () => {
                 <span className={styles.levelLabel}>
                   {currentDay ? `Day ${currentDay.day_number}` : 'Daily Focus'}
                 </span>
-                {currentDay && currentDay.status === 'COMPLETED' ? (
+                {currentDay?.status === 'COMPLETED' ? (
                   <Badge variant="completed" dot>Completed</Badge>
+                ) : currentDay?.status === 'AT_RISK' ? (
+                  <Badge variant="at-risk" dot>At Risk</Badge>
                 ) : (
                   <Badge variant="current" dot>Current Level</Badge>
                 )}

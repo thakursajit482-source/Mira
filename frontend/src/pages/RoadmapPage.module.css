@@ -2,6 +2,7 @@
   background-color: var(--bg-card);
   border-color: var(--border-medium);
   margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-sm);
 }
 
 .headerTop {
@@ -44,18 +45,33 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text-primary);
+  line-height: 1.25;
 }
 
 @media (min-width: 768px) {
   .roadmapTitle {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
   }
 }
 
 .roadmapDesc {
   font-size: 0.9375rem;
   color: var(--text-secondary);
-  max-width: 600px;
+  max-width: 620px;
+  line-height: 1.5;
+}
+
+.headerActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+  .headerActions {
+    align-items: flex-end;
+  }
 }
 
 .switcher {
@@ -65,8 +81,10 @@
 }
 
 .switcherLabel {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
 }
 
@@ -75,24 +93,96 @@
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
   padding: 0.4rem 0.8rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
 .selectInput:focus {
-  border-color: var(--border-focus);
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
-.headerBottom {
+/* Big Progress Section */
+.progressCard {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  border-top: 1px solid var(--border-subtle);
-  padding-top: var(--space-4);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
 }
 
-.progressArea {
+.progressMetrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 600px) {
+  .progressMetrics {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.percentDisplay {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.percentNumber {
+  font-size: 2.25rem;
+  font-weight: 850;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.percentLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statCounters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.statBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.statValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.progressBarWrapper {
   width: 100%;
 }
 
@@ -102,6 +192,9 @@
   justify-content: space-between;
   font-size: 0.8125rem;
   color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-3);
+  margin-top: var(--space-1);
 }
 
 .metaItem {
@@ -109,26 +202,31 @@
   align-items: center;
   gap: 0.35rem;
   font-family: var(--font-mono);
+  font-size: 0.75rem;
 }
 
+/* Progression Section */
 .progressionSection {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
   max-width: 720px;
   margin: 0 auto;
+  padding-bottom: var(--space-12);
 }
 
 .progressionHeader {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  padding: 0 var(--space-2);
 }
 
 .progressionTitle {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 750;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .progressionSub {

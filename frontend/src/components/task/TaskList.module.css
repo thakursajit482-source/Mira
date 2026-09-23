@@ -11,6 +11,7 @@
   align-items: center;
   padding: var(--space-2) var(--space-3);
   background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   color: var(--text-secondary);
@@ -24,6 +25,12 @@
   font-family: var(--font-mono);
   color: var(--accent-light);
   font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.remainingDone {
+  color: var(--status-completed);
+  font-weight: 600;
 }
 
 .list {
