@@ -150,3 +150,28 @@ export const HomeSkeleton: React.FC = () => {
     </div>
   );
 };
+
+export const HistoryTimelineSkeleton: React.FC = () => {
+  return (
+    <div className={styles.historySkeleton} aria-label="Loading roadmap history..." role="status">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className={styles.historyItemSkeleton}>
+          <div className={styles.timelineDotSkeleton}>
+            <Skeleton width="32px" height="32px" circle />
+          </div>
+          <div className={styles.historyContentSkeleton}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Skeleton width="130px" height="18px" />
+              <Skeleton width="85px" height="14px" />
+            </div>
+            <Skeleton width="90%" height="16px" />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+              <Skeleton width="80px" height="22px" borderRadius="12px" />
+              <Skeleton width="95px" height="22px" borderRadius="12px" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};

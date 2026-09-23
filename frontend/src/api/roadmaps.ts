@@ -8,6 +8,7 @@ import {
   RoadmapInsertionRequest,
   InsertionPreviewResponse,
   InsertionResultResponse,
+  RoadmapHistoryResponse,
 } from '../types';
 
 export async function listRoadmaps(userId?: number): Promise<Roadmap[]> {
@@ -61,4 +62,8 @@ export async function applyInsertion(
     method: 'POST',
     body: JSON.stringify(request),
   });
+}
+
+export async function getRoadmapHistory(roadmapId: number): Promise<RoadmapHistoryResponse> {
+  return apiClient<RoadmapHistoryResponse>(`/roadmaps/${roadmapId}/history`);
 }

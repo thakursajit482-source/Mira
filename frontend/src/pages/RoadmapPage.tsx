@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, PlusCircle, Calendar, RefreshCw, Compass } from 'lucide-react';
+import { Sparkles, PlusCircle, Calendar, RefreshCw, Compass, History } from 'lucide-react';
 import { listRoadmaps, getRoadmapDetails, getRoadmapProgress } from '../api/roadmaps';
 import { completeTask, uncompleteTask } from '../api/tasks';
 import { Roadmap, RoadmapDetail, RoadmapProgress, Day } from '../types';
@@ -16,6 +16,7 @@ import { ErrorBanner } from '../components/common/ErrorBanner';
 import { RoadmapNode } from '../components/roadmap/RoadmapNode';
 import { RoadmapPath } from '../components/roadmap/RoadmapPath';
 import { DayDetailModal } from '../components/roadmap/DayDetailModal';
+import { RoadmapHistoryModal } from '../components/roadmap/RoadmapHistoryModal';
 import styles from './RoadmapPage.module.css';
 
 export const RoadmapPage: React.FC = () => {
@@ -32,6 +33,7 @@ export const RoadmapPage: React.FC = () => {
 
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [updatingTaskIds, setUpdatingTaskIds] = useState<number[]>([]);
 
   // Load all roadmaps and initial selected roadmap
@@ -232,6 +234,16 @@ export const RoadmapPage: React.FC = () => {
             >
               Jump to Current Day
             </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsHistoryModalOpen(true)}
+              leftIcon={<History size={14} />}
+              title="View chronological roadmap change timeline"
+            >
+              History
+            </Button>
           </div>
         </div>
 
@@ -334,6 +346,14 @@ export const RoadmapPage: React.FC = () => {
         onClose={handleCloseDayModal}
         onToggleTask={handleToggleTask}
         updatingTaskIds={updatingTaskIds}
+      />
+
+      {/* Roadmap History Timeline Modal */}
+      <RoadmapHistoryModal
+        roadmapId={selectedRoadmapId}
+        roadmapTitle={roadmapDetail.title}
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
       />
     </div>
   );

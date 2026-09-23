@@ -149,3 +149,27 @@ export interface InsertionResultResponse {
   message: string;
   roadmap?: RoadmapDetail | null;
 }
+
+export type RoadmapChangeType =
+  | 'INITIAL_GENERATION'
+  | 'CONTENT_INSERTION'
+  | 'WORKLOAD_REBALANCE'
+  | 'TASK_UPDATE'
+  | 'SCHEDULE_SHIFT';
+
+export interface RoadmapChange {
+  id: number;
+  roadmap_id: number;
+  version_id: number | null;
+  version_number?: number | null;
+  change_type: RoadmapChangeType;
+  description: string;
+  metadata_info?: Record<string, any> | null;
+  created_at: string;
+}
+
+export interface RoadmapHistoryResponse {
+  roadmap_id: number;
+  total_changes: number;
+  changes: RoadmapChange[];
+}

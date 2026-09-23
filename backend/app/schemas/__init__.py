@@ -28,6 +28,11 @@ from backend.app.schemas.rescheduling import (
     RescheduleResultResponse,
 )
 
+from backend.app.schemas.history import (
+    RoadmapChangeResponse,
+    RoadmapHistoryResponse,
+)
+
 __all__ = [
     "HealthCheckResponse",
     "TaskBase",
@@ -52,4 +57,6 @@ __all__ = [
     "RoadmapRescheduleRequest",
     "ReschedulePreviewResponse",
     "RescheduleResultResponse",
+    "RoadmapChangeResponse",
+    "RoadmapHistoryResponse",
 ]

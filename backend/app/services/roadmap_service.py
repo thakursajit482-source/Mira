@@ -20,6 +20,10 @@ from backend.app.schemas.rescheduling import (
     ReschedulePreviewResponse,
     RescheduleResultResponse,
 )
+from backend.app.schemas.history import (
+    RoadmapChangeResponse,
+    RoadmapHistoryResponse,
+)
 from backend.app.ai.schemas import RoadmapGenerationRequest
 from backend.app.ai.service import ai_service
 from backend.app.ai.validator import AIValidationError
@@ -320,6 +324,44 @@ class RoadmapService:
             .where(Roadmap.id == roadmap.id)
         )
         return db.scalar(stmt)
+
+    @staticmethod
+    def get_roadmap_history(db: Session, roadmap_id: int) -> RoadmapHistoryResponse:
+        """Retrieve chronological change timeline and audit log for a roadmap, newest changes first."""
+        roadmap = db.get(Roadmap, roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Roadmap with id {roadmap_id} not found",
+            )
+
+        stmt = (
+            select(RoadmapChange)
+            .options(selectinload(RoadmapChange.version))
+            .where(RoadmapChange.roadmap_id == roadmap_id)
+            .order_by(RoadmapChange.created_at.desc(), RoadmapChange.id.desc())
+        )
+        changes = db.scalars(stmt).all()
+
+        change_responses = [
+            RoadmapChangeResponse(
+                id=c.id,
+                roadmap_id=c.roadmap_id,
+                version_id=c.version_id,
+                version_number=c.version.version_number if c.version else None,
+                change_type=c.change_type,
+                description=c.description,
+                metadata_info=c.metadata_info,
+                created_at=c.created_at,
+            )
+            for c in changes
+        ]
+
+        return RoadmapHistoryResponse(
+            roadmap_id=roadmap_id,
+            total_changes=len(change_responses),
+            changes=change_responses,
+        )
 
 
 roadmap_service = RoadmapService()

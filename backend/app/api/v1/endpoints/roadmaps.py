@@ -21,6 +21,7 @@ from backend.app.schemas.rescheduling import (
     ReschedulePreviewResponse,
     RescheduleResultResponse,
 )
+from backend.app.schemas.history import RoadmapHistoryResponse
 from backend.app.ai.schemas import RoadmapGenerationRequest, GeneratedRoadmap
 from backend.app.ai.service import ai_service
 from backend.app.ai.validator import AIValidationError
@@ -156,6 +157,20 @@ def get_roadmap_progress(
 ) -> RoadmapProgressResponse:
     """Get calculated roadmap progress."""
     return progress_service.calculate_roadmap_progress(db, roadmap_id)
+
+
+@router.get(
+    "/{roadmap_id}/history",
+    response_model=RoadmapHistoryResponse,
+    summary="Get Roadmap History",
+    description="Retrieve chronological change timeline and audit log for a roadmap, newest changes first.",
+)
+def get_roadmap_history(
+    roadmap_id: int,
+    db: Session = Depends(get_db),
+) -> RoadmapHistoryResponse:
+    """Get roadmap change history."""
+    return roadmap_service.get_roadmap_history(db, roadmap_id)
 
 
 @router.post(
