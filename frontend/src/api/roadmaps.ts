@@ -13,6 +13,7 @@ import {
   RoadmapRescheduleRequest,
   ReschedulePreviewResponse,
   RescheduleResultResponse,
+  RoadmapMomentum,
 } from '../types';
 
 export async function listRoadmaps(userId?: number): Promise<Roadmap[]> {
@@ -98,4 +99,8 @@ export async function applyReschedule(
     method: 'POST',
     body: JSON.stringify(request),
   });
+}
+
+export async function getRoadmapMomentum(roadmapId: number): Promise<RoadmapMomentum> {
+  return apiClient<RoadmapMomentum>(`/roadmaps/${roadmapId}/momentum`);
 }

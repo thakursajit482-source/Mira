@@ -12,12 +12,15 @@ import {
   CalendarClock,
   Info,
   AlertCircle,
+  Flame,
+  TrendingUp,
 } from 'lucide-react';
 import {
   listRoadmaps,
   getRoadmapDetails,
   getRoadmapProgress,
   getDailyWorkloadAnalysis,
+  getRoadmapMomentum,
 } from '../api/roadmaps';
 import { completeTask, uncompleteTask } from '../api/tasks';
 import {
@@ -26,6 +29,7 @@ import {
   RoadmapProgress,
   Day,
   DailyWorkloadAnalysisResponse,
+  RoadmapMomentum,
 } from '../types';
 import { DEV_USER } from '../utils/devUser';
 import { formatMinutes } from '../utils/formatters';
@@ -57,12 +61,13 @@ export const HomePage: React.FC = () => {
   const [roadmapDetail, setRoadmapDetail] = useState<RoadmapDetail | null>(null);
   const [progress, setProgress] = useState<RoadmapProgress | null>(null);
   const [dailyAnalysis, setDailyAnalysis] = useState<DailyWorkloadAnalysisResponse | null>(null);
+  const [momentum, setMomentum] = useState<RoadmapMomentum | null>(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
   const [updatingTaskIds, setUpdatingTaskIds] = useState<number[]>([]);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 
-  // Fetch active roadmap, details, progress, and daily analysis
+  // Fetch active roadmap, details, progress, daily analysis, and momentum
   const loadActiveRoadmap = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -74,6 +79,7 @@ export const HomePage: React.FC = () => {
         setRoadmapDetail(null);
         setProgress(null);
         setDailyAnalysis(null);
+        setMomentum(null);
         return;
       }
 
@@ -81,15 +87,17 @@ export const HomePage: React.FC = () => {
       const primaryRoadmap = roadmaps[0];
       setActiveRoadmap(primaryRoadmap);
 
-      const [detailData, progressData, analysisData] = await Promise.all([
+      const [detailData, progressData, analysisData, momentumData] = await Promise.all([
         getRoadmapDetails(primaryRoadmap.id),
         getRoadmapProgress(primaryRoadmap.id),
         getDailyWorkloadAnalysis(primaryRoadmap.id),
+        getRoadmapMomentum(primaryRoadmap.id).catch(() => null),
       ]);
 
       setRoadmapDetail(detailData);
       setProgress(progressData);
       setDailyAnalysis(analysisData);
+      setMomentum(momentumData);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to load roadmap data';
       setError(msg);
@@ -115,16 +123,20 @@ export const HomePage: React.FC = () => {
         await completeTask(taskId);
       }
 
-      // Reload fresh authoritative details, progress, and analysis from backend
-      const [updatedDetail, updatedProgress, updatedAnalysis] = await Promise.all([
+      // Reload fresh authoritative details, progress, analysis, and momentum from backend
+      const [updatedDetail, updatedProgress, updatedAnalysis, updatedMomentum] = await Promise.all([
         getRoadmapDetails(activeRoadmap.id),
         getRoadmapProgress(activeRoadmap.id),
         getDailyWorkloadAnalysis(activeRoadmap.id),
+        getRoadmapMomentum(activeRoadmap.id).catch(() => null),
       ]);
 
       setRoadmapDetail(updatedDetail);
       setProgress(updatedProgress);
       setDailyAnalysis(updatedAnalysis);
+      if (updatedMomentum) {
+        setMomentum(updatedMomentum);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to update task status';
       setError(msg);
@@ -485,6 +497,29 @@ export const HomePage: React.FC = () => {
                   size="md"
                   variant={progress.is_completed ? 'success' : 'primary'}
                 />
+              </div>
+            )}
+
+            {/* Phase 10.6: Compact Progress & Momentum summary row */}
+            {momentum && (
+              <div className={styles.homeMomentumRow}>
+                <div className={styles.homeMomentumChips}>
+                  <span className={styles.homeMomentumChip} title="Current consistency streak">
+                    <Flame size={13} className={styles.homeFlameIcon} />
+                    <span>{momentum.streak.current_days}d streak</span>
+                  </span>
+                  <span className={styles.homeMomentumChip} title={momentum.momentum.description}>
+                    <TrendingUp size={13} />
+                    <span>{momentum.momentum.label}</span>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.viewProgressLink}
+                  onClick={() => navigate('/roadmap')}
+                >
+                  View Progress &rarr;
+                </button>
               </div>
             )}
 

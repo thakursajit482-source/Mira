@@ -175,3 +175,34 @@ export const HistoryTimelineSkeleton: React.FC = () => {
     </div>
   );
 };
+
+export const MomentumSkeleton: React.FC = () => {
+  return (
+    <div className={styles.momentumSkeleton} aria-label="Loading progress and momentum..." role="status">
+      <div className={styles.momentumOverviewSkeleton}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Skeleton width="160px" height="22px" />
+          <Skeleton width="90px" height="16px" />
+        </div>
+        <Skeleton width="100%" height="8px" borderRadius="4px" />
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <Skeleton width="120px" height="20px" />
+          <Skeleton width="120px" height="20px" />
+          <Skeleton width="120px" height="20px" />
+        </div>
+      </div>
+      <div className={styles.momentumCardsGridSkeleton}>
+        <div className={styles.momentumOverviewSkeleton}>
+          <Skeleton width="100px" height="16px" />
+          <Skeleton width="140px" height="28px" />
+          <Skeleton width="80px" height="14px" />
+        </div>
+        <div className={styles.momentumOverviewSkeleton}>
+          <Skeleton width="100px" height="16px" />
+          <Skeleton width="150px" height="28px" />
+          <Skeleton width="120px" height="14px" />
+        </div>
+      </div>
+    </div>
+  );
+};

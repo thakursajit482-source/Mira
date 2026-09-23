@@ -23,6 +23,7 @@ from backend.app.schemas.rescheduling import (
 )
 from backend.app.schemas.history import RoadmapHistoryResponse
 from backend.app.schemas.daily_analysis import DailyWorkloadAnalysisResponse
+from backend.app.schemas.momentum import RoadmapMomentumResponse
 from backend.app.ai.schemas import RoadmapGenerationRequest, GeneratedRoadmap
 from backend.app.ai.service import ai_service
 from backend.app.ai.validator import AIValidationError
@@ -188,6 +189,20 @@ def get_daily_workload_analysis(
 ) -> DailyWorkloadAnalysisResponse:
     """Get deterministic daily workload analysis."""
     return daily_analysis_service.analyze_daily_workload(db, roadmap_id, day_number)
+
+
+@router.get(
+    "/{roadmap_id}/momentum",
+    response_model=RoadmapMomentumResponse,
+    summary="Get Roadmap Momentum & Progress",
+    description="Retrieve deterministic progress metrics, streak tracking, momentum classification, milestones, and recent activity.",
+)
+def get_roadmap_momentum(
+    roadmap_id: int,
+    db: Session = Depends(get_db),
+) -> RoadmapMomentumResponse:
+    """Get calculated roadmap progress and momentum metrics."""
+    return progress_service.calculate_roadmap_momentum(db, roadmap_id)
 
 
 @router.post(

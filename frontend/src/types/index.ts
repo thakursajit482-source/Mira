@@ -245,3 +245,66 @@ export interface RescheduleResultResponse {
   roadmap?: RoadmapDetail | null;
 }
 
+// Phase 10.6: Progress & Momentum System
+export interface CompletionMetrics {
+  total_days: number;
+  completed_days: number;
+  remaining_days: number;
+  percentage: number;
+}
+
+export interface TaskMetrics {
+  total_tasks: number;
+  completed_tasks: number;
+  remaining_tasks: number;
+  percentage: number;
+}
+
+export interface TimeMetrics {
+  total_planned_minutes: number | null;
+  completed_minutes: number | null;
+  remaining_minutes: number | null;
+  percentage: number | null;
+}
+
+export interface StreakMetrics {
+  current_days: number;
+  best_days: number;
+  last_productive_date: string | null;
+}
+
+export type MomentumStatus = 'BUILDING' | 'STEADY' | 'SLOWING' | 'PAUSED' | 'COMPLETE';
+
+export interface MomentumMetrics {
+  status: MomentumStatus;
+  label: string;
+  description: string;
+}
+
+export interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  achieved: boolean;
+  achieved_at: string | null;
+}
+
+export interface RecentProgressActivity {
+  id: string;
+  event_type: string;
+  title: string;
+  description: string | null;
+  timestamp: string;
+}
+
+export interface RoadmapMomentum {
+  roadmap_id: number;
+  completion: CompletionMetrics;
+  tasks: TaskMetrics;
+  time: TimeMetrics;
+  streak: StreakMetrics;
+  momentum: MomentumMetrics;
+  milestones: Milestone[];
+  recent_activity: RecentProgressActivity[];
+}
+

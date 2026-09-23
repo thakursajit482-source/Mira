@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, PlusCircle, Calendar, RefreshCw, Compass, History } from 'lucide-react';
-import { listRoadmaps, getRoadmapDetails, getRoadmapProgress } from '../api/roadmaps';
+import { listRoadmaps, getRoadmapDetails, getRoadmapProgress, getRoadmapMomentum } from '../api/roadmaps';
 import { completeTask, uncompleteTask } from '../api/tasks';
-import { Roadmap, RoadmapDetail, RoadmapProgress, Day } from '../types';
+import { Roadmap, RoadmapDetail, RoadmapProgress, RoadmapMomentum, Day } from '../types';
 import { DEV_USER } from '../utils/devUser';
 import { formatDate } from '../utils/formatters';
 import { Card } from '../components/common/Card';
@@ -17,6 +17,7 @@ import { RoadmapNode } from '../components/roadmap/RoadmapNode';
 import { RoadmapPath } from '../components/roadmap/RoadmapPath';
 import { DayDetailModal } from '../components/roadmap/DayDetailModal';
 import { RoadmapHistoryModal } from '../components/roadmap/RoadmapHistoryModal';
+import { RoadmapMomentumSection } from '../components/roadmap/RoadmapMomentumSection';
 import styles from './RoadmapPage.module.css';
 
 export const RoadmapPage: React.FC = () => {
@@ -30,6 +31,7 @@ export const RoadmapPage: React.FC = () => {
   const [selectedRoadmapId, setSelectedRoadmapId] = useState<number | null>(null);
   const [roadmapDetail, setRoadmapDetail] = useState<RoadmapDetail | null>(null);
   const [progress, setProgress] = useState<RoadmapProgress | null>(null);
+  const [momentum, setMomentum] = useState<RoadmapMomentum | null>(null);
 
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,17 +51,20 @@ export const RoadmapPage: React.FC = () => {
         const primaryId = data[0].id;
         setSelectedRoadmapId(primaryId);
 
-        const [detailData, progressData] = await Promise.all([
+        const [detailData, progressData, momentumData] = await Promise.all([
           getRoadmapDetails(primaryId),
           getRoadmapProgress(primaryId),
+          getRoadmapMomentum(primaryId).catch(() => null),
         ]);
 
         setRoadmapDetail(detailData);
         setProgress(progressData);
+        setMomentum(momentumData);
       } else {
         setSelectedRoadmapId(null);
         setRoadmapDetail(null);
         setProgress(null);
+        setMomentum(null);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to load roadmap';
@@ -78,12 +83,14 @@ export const RoadmapPage: React.FC = () => {
     try {
       setSelectedRoadmapId(id);
       setIsLoading(true);
-      const [detailData, progressData] = await Promise.all([
+      const [detailData, progressData, momentumData] = await Promise.all([
         getRoadmapDetails(id),
         getRoadmapProgress(id),
+        getRoadmapMomentum(id).catch(() => null),
       ]);
       setRoadmapDetail(detailData);
       setProgress(progressData);
+      setMomentum(momentumData);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to load roadmap details';
       setError(msg);
@@ -123,14 +130,18 @@ export const RoadmapPage: React.FC = () => {
         await completeTask(taskId);
       }
 
-      // Reload fresh authoritative details and progress from backend
-      const [updatedDetail, updatedProgress] = await Promise.all([
+      // Reload fresh authoritative details, progress, and momentum from backend
+      const [updatedDetail, updatedProgress, updatedMomentum] = await Promise.all([
         getRoadmapDetails(selectedRoadmapId),
         getRoadmapProgress(selectedRoadmapId),
+        getRoadmapMomentum(selectedRoadmapId).catch(() => null),
       ]);
 
       setRoadmapDetail(updatedDetail);
       setProgress(updatedProgress);
+      if (updatedMomentum) {
+        setMomentum(updatedMomentum);
+      }
 
       // Also update currently inspected day inside modal if open
       if (selectedDay) {
@@ -295,6 +306,9 @@ export const RoadmapPage: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* Progress & Momentum Section */}
+      {momentum && <RoadmapMomentumSection momentum={momentum} />}
 
       {/* Progression Section */}
       <div className={styles.progressionSection}>

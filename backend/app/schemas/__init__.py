@@ -36,6 +36,17 @@ from backend.app.schemas.daily_analysis import (
     DailyWorkloadStatus,
     DailyWorkloadAnalysisResponse,
 )
+from backend.app.schemas.momentum import (
+    CompletionMetrics,
+    TaskMetrics,
+    TimeMetrics,
+    StreakMetrics,
+    MomentumStatus,
+    MomentumMetrics,
+    Milestone,
+    RecentProgressActivity,
+    RoadmapMomentumResponse,
+)
 
 __all__ = [
     "HealthCheckResponse",
@@ -65,5 +76,14 @@ __all__ = [
     "RoadmapHistoryResponse",
     "DailyWorkloadStatus",
     "DailyWorkloadAnalysisResponse",
+    "CompletionMetrics",
+    "TaskMetrics",
+    "TimeMetrics",
+    "StreakMetrics",
+    "MomentumStatus",
+    "MomentumMetrics",
+    "Milestone",
+    "RecentProgressActivity",
+    "RoadmapMomentumResponse",
 ]
 
