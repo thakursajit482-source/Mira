@@ -22,11 +22,13 @@ from backend.app.schemas.rescheduling import (
     RescheduleResultResponse,
 )
 from backend.app.schemas.history import RoadmapHistoryResponse
+from backend.app.schemas.daily_analysis import DailyWorkloadAnalysisResponse
 from backend.app.ai.schemas import RoadmapGenerationRequest, GeneratedRoadmap
 from backend.app.ai.service import ai_service
 from backend.app.ai.validator import AIValidationError
 from backend.app.services.roadmap_service import roadmap_service
 from backend.app.services.progress_service import progress_service
+from backend.app.services.daily_analysis_service import daily_analysis_service
 
 router = APIRouter(prefix="/roadmaps", tags=["roadmaps"])
 
@@ -171,6 +173,21 @@ def get_roadmap_history(
 ) -> RoadmapHistoryResponse:
     """Get roadmap change history."""
     return roadmap_service.get_roadmap_history(db, roadmap_id)
+
+
+@router.get(
+    "/{roadmap_id}/daily-analysis",
+    response_model=DailyWorkloadAnalysisResponse,
+    summary="Get Daily Workload Analysis",
+    description="Deterministically analyze current day workload against available capacity, returning status, task counts, and smart recommendations.",
+)
+def get_daily_workload_analysis(
+    roadmap_id: int,
+    day_number: Optional[int] = Query(None, description="Optional specific day number to analyze"),
+    db: Session = Depends(get_db),
+) -> DailyWorkloadAnalysisResponse:
+    """Get deterministic daily workload analysis."""
+    return daily_analysis_service.analyze_daily_workload(db, roadmap_id, day_number)
 
 
 @router.post(

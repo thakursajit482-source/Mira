@@ -321,3 +321,150 @@
     animation: none;
   }
 }
+
+/* Smart Daily Planning Styles */
+.budgetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-1);
+}
+
+.budgetItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.budgetLabel {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.budgetValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.budgetOverage {
+  color: var(--color-danger);
+}
+
+.budgetRemaining {
+  color: var(--color-success);
+}
+
+.capacityTrackWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.capacityTrackHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.capacityTrack {
+  width: 100%;
+  height: 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.capacityFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+.capacityFillOnTrack {
+  background-color: var(--accent-primary);
+}
+
+.capacityFillTight {
+  background-color: #f59e0b;
+}
+
+.capacityFillOver {
+  background-color: var(--color-danger);
+}
+
+.recommendationCard {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.recommendationCardOver {
+  border-left-color: var(--color-danger);
+}
+
+.recommendationCardTight {
+  border-left-color: #f59e0b;
+}
+
+.recommendationContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 200px;
+}
+
+.recommendationIcon {
+  flex-shrink: 0;
+  color: var(--accent-light);
+}
+
+.recommendationIconOver {
+  color: var(--color-danger);
+}
+
+.recommendationText {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.upcomingInsight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  padding-top: var(--space-1);
+}
+
+@media (max-width: 580px) {
+  .budgetGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .recommendationCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

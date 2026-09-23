@@ -32,6 +32,10 @@ from backend.app.schemas.history import (
     RoadmapChangeResponse,
     RoadmapHistoryResponse,
 )
+from backend.app.schemas.daily_analysis import (
+    DailyWorkloadStatus,
+    DailyWorkloadAnalysisResponse,
+)
 
 __all__ = [
     "HealthCheckResponse",
@@ -59,4 +63,7 @@ __all__ = [
     "RescheduleResultResponse",
     "RoadmapChangeResponse",
     "RoadmapHistoryResponse",
+    "DailyWorkloadStatus",
+    "DailyWorkloadAnalysisResponse",
 ]
+

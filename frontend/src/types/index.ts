@@ -173,3 +173,75 @@ export interface RoadmapHistoryResponse {
   total_changes: number;
   changes: RoadmapChange[];
 }
+
+export type DailyWorkloadStatus = 'ON_TRACK' | 'TIGHT' | 'OVER_CAPACITY' | 'COMPLETE';
+
+export interface DailyWorkloadAnalysisResponse {
+  roadmap_id: number;
+  day_number: number;
+  day_id: number;
+  date?: string | null;
+  status: DailyWorkloadStatus;
+  remaining_task_count: number;
+  completed_task_count: number;
+  total_task_count: number;
+  remaining_minutes: number;
+  completed_minutes: number;
+  total_minutes: number;
+  available_minutes: number;
+  remaining_capacity_minutes: number;
+  overage_minutes: number;
+  recommendation: string;
+  tomorrow_minutes?: number | null;
+  upcoming_average_minutes?: number | null;
+}
+
+export interface TaskMovement {
+  task_id: number;
+  task_title: string;
+  from_day_number: number;
+  to_day_number: number;
+  estimated_minutes: number;
+}
+
+export interface DayWorkload {
+  day_number: number;
+  task_count: number;
+  total_estimated_minutes: number;
+  is_overloaded: boolean;
+}
+
+export interface WorkloadComparison {
+  before: DayWorkload[];
+  after: DayWorkload[];
+}
+
+export interface RoadmapRescheduleRequest {
+  daily_available_minutes?: number | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface ReschedulePreviewResponse {
+  status: string;
+  conflict: boolean;
+  conflict_reason?: string | null;
+  first_incomplete_day?: number | null;
+  task_movements: TaskMovement[];
+  workload_comparison?: WorkloadComparison | null;
+  daily_capacity_minutes: number;
+  target_duration_days: number;
+  message: string;
+}
+
+export interface RescheduleResultResponse {
+  status: string;
+  conflict: boolean;
+  conflict_reason?: string | null;
+  first_incomplete_day?: number | null;
+  task_movements: TaskMovement[];
+  daily_capacity_minutes: number;
+  target_duration_days: number;
+  message: string;
+  roadmap?: RoadmapDetail | null;
+}
+

@@ -9,10 +9,24 @@ import {
   Map,
   ChevronDown,
   ChevronUp,
+  CalendarClock,
+  Info,
+  AlertCircle,
 } from 'lucide-react';
-import { listRoadmaps, getRoadmapDetails, getRoadmapProgress } from '../api/roadmaps';
+import {
+  listRoadmaps,
+  getRoadmapDetails,
+  getRoadmapProgress,
+  getDailyWorkloadAnalysis,
+} from '../api/roadmaps';
 import { completeTask, uncompleteTask } from '../api/tasks';
-import { Roadmap, RoadmapDetail, RoadmapProgress, Day } from '../types';
+import {
+  Roadmap,
+  RoadmapDetail,
+  RoadmapProgress,
+  Day,
+  DailyWorkloadAnalysisResponse,
+} from '../types';
 import { DEV_USER } from '../utils/devUser';
 import { formatMinutes } from '../utils/formatters';
 import { Card } from '../components/common/Card';
@@ -23,6 +37,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ErrorBanner } from '../components/common/ErrorBanner';
 import { TaskList } from '../components/task/TaskList';
 import { Button } from '../components/common/Button';
+import { ReschedulePreviewModal } from '../components/roadmap/ReschedulePreviewModal';
 import styles from './HomePage.module.css';
 
 function getGreeting(): string {
@@ -41,11 +56,13 @@ export const HomePage: React.FC = () => {
   const [activeRoadmap, setActiveRoadmap] = useState<Roadmap | null>(null);
   const [roadmapDetail, setRoadmapDetail] = useState<RoadmapDetail | null>(null);
   const [progress, setProgress] = useState<RoadmapProgress | null>(null);
+  const [dailyAnalysis, setDailyAnalysis] = useState<DailyWorkloadAnalysisResponse | null>(null);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
   const [updatingTaskIds, setUpdatingTaskIds] = useState<number[]>([]);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 
-  // Fetch active roadmap, details, and progress
+  // Fetch active roadmap, details, progress, and daily analysis
   const loadActiveRoadmap = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -56,6 +73,7 @@ export const HomePage: React.FC = () => {
         setActiveRoadmap(null);
         setRoadmapDetail(null);
         setProgress(null);
+        setDailyAnalysis(null);
         return;
       }
 
@@ -63,13 +81,15 @@ export const HomePage: React.FC = () => {
       const primaryRoadmap = roadmaps[0];
       setActiveRoadmap(primaryRoadmap);
 
-      const [detailData, progressData] = await Promise.all([
+      const [detailData, progressData, analysisData] = await Promise.all([
         getRoadmapDetails(primaryRoadmap.id),
         getRoadmapProgress(primaryRoadmap.id),
+        getDailyWorkloadAnalysis(primaryRoadmap.id),
       ]);
 
       setRoadmapDetail(detailData);
       setProgress(progressData);
+      setDailyAnalysis(analysisData);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to load roadmap data';
       setError(msg);
@@ -95,14 +115,16 @@ export const HomePage: React.FC = () => {
         await completeTask(taskId);
       }
 
-      // Reload fresh authoritative details and progress from backend
-      const [updatedDetail, updatedProgress] = await Promise.all([
+      // Reload fresh authoritative details, progress, and analysis from backend
+      const [updatedDetail, updatedProgress, updatedAnalysis] = await Promise.all([
         getRoadmapDetails(activeRoadmap.id),
         getRoadmapProgress(activeRoadmap.id),
+        getDailyWorkloadAnalysis(activeRoadmap.id),
       ]);
 
       setRoadmapDetail(updatedDetail);
       setProgress(updatedProgress);
+      setDailyAnalysis(updatedAnalysis);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to update task status';
       setError(msg);
@@ -184,6 +206,18 @@ export const HomePage: React.FC = () => {
   const greeting = getGreeting();
 
   const getStatusBadge = () => {
+    if (dailyAnalysis) {
+      switch (dailyAnalysis.status) {
+        case 'COMPLETE':
+          return <Badge variant="completed" dot>Completed</Badge>;
+        case 'OVER_CAPACITY':
+          return <Badge variant="at-risk" dot>Over Capacity</Badge>;
+        case 'TIGHT':
+          return <Badge variant="current" dot>Tight Schedule</Badge>;
+        case 'ON_TRACK':
+          return <Badge variant="completed" dot>On Track</Badge>;
+      }
+    }
     if (isDayCompleted) {
       return <Badge variant="completed" dot>Completed</Badge>;
     }
@@ -195,6 +229,11 @@ export const HomePage: React.FC = () => {
     }
     return <Badge variant="current" dot>Current Level</Badge>;
   };
+
+  const capacityPercent =
+    dailyAnalysis && dailyAnalysis.available_minutes > 0
+      ? Math.min(100, Math.round((dailyAnalysis.remaining_minutes / dailyAnalysis.available_minutes) * 100))
+      : 0;
 
   return (
     <div className="container">
@@ -219,11 +258,43 @@ export const HomePage: React.FC = () => {
                 {getStatusBadge()}
               </div>
               <h2 className={styles.dayTitle}>
-                Day {currentDay.day_number}: {currentDay.title || `Day ${currentDay.day_number}`}
+                Day {currentDay.day_number}
               </h2>
             </div>
 
-            {/* Daily Task Progress Bar & Workload */}
+            {/* Smart Workload Budget Grid */}
+            <div className={styles.budgetGrid}>
+              <div className={styles.budgetItem}>
+                <span className={styles.budgetLabel}>Estimated Time</span>
+                <span className={styles.budgetValue}>
+                  {dailyAnalysis ? formatMinutes(dailyAnalysis.remaining_minutes) : formatMinutes(remainingMinutes)}
+                </span>
+              </div>
+              <div className={styles.budgetItem}>
+                <span className={styles.budgetLabel}>Available Today</span>
+                <span className={styles.budgetValue}>
+                  {dailyAnalysis ? formatMinutes(dailyAnalysis.available_minutes) : '2h'}
+                </span>
+              </div>
+              <div className={styles.budgetItem}>
+                <span className={styles.budgetLabel}>Capacity Margin</span>
+                <span
+                  className={`${styles.budgetValue} ${
+                    dailyAnalysis?.status === 'OVER_CAPACITY'
+                      ? styles.budgetOverage
+                      : styles.budgetRemaining
+                  }`}
+                >
+                  {dailyAnalysis?.status === 'OVER_CAPACITY'
+                    ? `+${dailyAnalysis.overage_minutes}m over`
+                    : dailyAnalysis?.status === 'COMPLETE'
+                    ? 'Complete'
+                    : `${dailyAnalysis?.remaining_capacity_minutes ?? 0}m left`}
+                </span>
+              </div>
+            </div>
+
+            {/* Daily Task Progress Bar & Capacity Track */}
             <div className={styles.dailyProgressBlock}>
               <div className={styles.progressStats}>
                 <span className={styles.taskCounter}>
@@ -242,7 +313,7 @@ export const HomePage: React.FC = () => {
                 )}
               </div>
 
-              {/* Mini Daily Progress Track */}
+              {/* Task Completion Progress Track */}
               <div
                 className={styles.miniTrack}
                 role="progressbar"
@@ -256,7 +327,71 @@ export const HomePage: React.FC = () => {
                   style={{ width: `${todayPercentage}%` }}
                 />
               </div>
+
+              {/* Capacity Usage Track */}
+              {dailyAnalysis && !isDayCompleted && (
+                <div className={styles.capacityTrackWrapper}>
+                  <div className={styles.capacityTrackHeader}>
+                    <span>Workload Capacity Usage</span>
+                    <span>{capacityPercent}%</span>
+                  </div>
+                  <div
+                    className={styles.capacityTrack}
+                    role="progressbar"
+                    aria-valuenow={capacityPercent}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Today's workload capacity usage"
+                  >
+                    <div
+                      className={`${styles.capacityFill} ${
+                        dailyAnalysis.status === 'OVER_CAPACITY'
+                          ? styles.capacityFillOver
+                          : dailyAnalysis.status === 'TIGHT'
+                          ? styles.capacityFillTight
+                          : styles.capacityFillOnTrack
+                      }`}
+                      style={{ width: `${capacityPercent}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Smart Recommendation Card */}
+            {dailyAnalysis && !isDayCompleted && (
+              <div
+                className={`${styles.recommendationCard} ${
+                  dailyAnalysis.status === 'OVER_CAPACITY'
+                    ? styles.recommendationCardOver
+                    : dailyAnalysis.status === 'TIGHT'
+                    ? styles.recommendationCardTight
+                    : ''
+                }`}
+              >
+                <div className={styles.recommendationContent}>
+                  {dailyAnalysis.status === 'OVER_CAPACITY' ? (
+                    <AlertCircle size={18} className={styles.recommendationIconOver} />
+                  ) : dailyAnalysis.status === 'TIGHT' ? (
+                    <CalendarClock size={18} className={styles.recommendationIcon} />
+                  ) : (
+                    <Info size={18} className={styles.recommendationIcon} />
+                  )}
+                  <p className={styles.recommendationText}>{dailyAnalysis.recommendation}</p>
+                </div>
+
+                {dailyAnalysis.status === 'OVER_CAPACITY' && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setIsRescheduleModalOpen(true)}
+                    leftIcon={<CalendarClock size={13} />}
+                  >
+                    Preview Lighter Schedule
+                  </Button>
+                )}
+              </div>
+            )}
 
             {/* Task Area: Active List OR Satisfying Completed Moment */}
             {isDayCompleted ? (
@@ -314,6 +449,18 @@ export const HomePage: React.FC = () => {
                 />
               </div>
             )}
+
+            {/* Secondary Upcoming Workload Insight */}
+            {dailyAnalysis && (dailyAnalysis.tomorrow_minutes || dailyAnalysis.upcoming_average_minutes) && (
+              <div className={styles.upcomingInsight}>
+                <Clock size={12} />
+                <span>
+                  {dailyAnalysis.tomorrow_minutes ? `Tomorrow: ${formatMinutes(dailyAnalysis.tomorrow_minutes)} planned` : ''}
+                  {dailyAnalysis.tomorrow_minutes && dailyAnalysis.upcoming_average_minutes ? ' · ' : ''}
+                  {dailyAnalysis.upcoming_average_minutes ? `Next days avg: ~${formatMinutes(dailyAnalysis.upcoming_average_minutes)}/day` : ''}
+                </span>
+              </div>
+            )}
           </Card>
         </section>
 
@@ -358,6 +505,14 @@ export const HomePage: React.FC = () => {
             </div>
           </Card>
         </section>
+
+        {/* Reschedule Preview Modal */}
+        <ReschedulePreviewModal
+          roadmapId={activeRoadmap.id}
+          isOpen={isRescheduleModalOpen}
+          onClose={() => setIsRescheduleModalOpen(false)}
+          onSuccess={loadActiveRoadmap}
+        />
       </div>
     </div>
   );

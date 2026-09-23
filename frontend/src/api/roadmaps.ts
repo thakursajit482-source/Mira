@@ -9,6 +9,10 @@ import {
   InsertionPreviewResponse,
   InsertionResultResponse,
   RoadmapHistoryResponse,
+  DailyWorkloadAnalysisResponse,
+  RoadmapRescheduleRequest,
+  ReschedulePreviewResponse,
+  RescheduleResultResponse,
 } from '../types';
 
 export async function listRoadmaps(userId?: number): Promise<Roadmap[]> {
@@ -66,4 +70,32 @@ export async function applyInsertion(
 
 export async function getRoadmapHistory(roadmapId: number): Promise<RoadmapHistoryResponse> {
   return apiClient<RoadmapHistoryResponse>(`/roadmaps/${roadmapId}/history`);
+}
+
+export async function getDailyWorkloadAnalysis(
+  roadmapId: number,
+  dayNumber?: number
+): Promise<DailyWorkloadAnalysisResponse> {
+  const query = dayNumber !== undefined ? `?day_number=${dayNumber}` : '';
+  return apiClient<DailyWorkloadAnalysisResponse>(`/roadmaps/${roadmapId}/daily-analysis${query}`);
+}
+
+export async function previewReschedule(
+  roadmapId: number,
+  request: RoadmapRescheduleRequest = {}
+): Promise<ReschedulePreviewResponse> {
+  return apiClient<ReschedulePreviewResponse>(`/roadmaps/${roadmapId}/reschedule/preview`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export async function applyReschedule(
+  roadmapId: number,
+  request: RoadmapRescheduleRequest = {}
+): Promise<RescheduleResultResponse> {
+  return apiClient<RescheduleResultResponse>(`/roadmaps/${roadmapId}/reschedule`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
 }
