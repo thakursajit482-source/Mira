@@ -1,8 +1,9 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
+from backend.app.models.user import User
 from backend.app.schemas.roadmap import (
     RoadmapCreate,
     RoadmapUpdate,
@@ -20,11 +21,52 @@ from backend.app.schemas.rescheduling import (
     ReschedulePreviewResponse,
     RescheduleResultResponse,
 )
-from backend.app.ai.schemas import RoadmapGenerationRequest
+from backend.app.ai.schemas import RoadmapGenerationRequest, GeneratedRoadmap
+from backend.app.ai.service import ai_service
+from backend.app.ai.validator import AIValidationError
 from backend.app.services.roadmap_service import roadmap_service
 from backend.app.services.progress_service import progress_service
 
 router = APIRouter(prefix="/roadmaps", tags=["roadmaps"])
+
+
+@router.post(
+    "/generate/preview",
+    response_model=GeneratedRoadmap,
+    status_code=status.HTTP_200_OK,
+    summary="Preview AI-Generated Roadmap",
+    description="Generate and validate a structured roadmap proposal without persisting to the database.",
+)
+def preview_generate_roadmap(
+    request: RoadmapGenerationRequest,
+    db: Session = Depends(get_db),
+) -> GeneratedRoadmap:
+    """Generate and validate a structured roadmap proposal without mutating the database."""
+    user = db.get(User, request.user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {request.user_id} not found",
+        )
+
+    effective_daily_capacity = (
+        request.daily_available_minutes
+        or user.daily_available_minutes
+        or 120
+    )
+
+    try:
+        return ai_service.generate_roadmap(request, effective_daily_capacity)
+    except AIValidationError as err:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"message": err.message, "errors": err.details},
+        )
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI provider failed to generate roadmap: {str(err)}",
+        )
 
 
 @router.post(

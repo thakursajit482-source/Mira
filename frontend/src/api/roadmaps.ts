@@ -1,5 +1,14 @@
 import { apiClient } from './client';
-import { Roadmap, RoadmapDetail, RoadmapProgress, RoadmapGenerationRequest } from '../types';
+import {
+  Roadmap,
+  RoadmapDetail,
+  RoadmapProgress,
+  RoadmapGenerationRequest,
+  GeneratedRoadmap,
+  RoadmapInsertionRequest,
+  InsertionPreviewResponse,
+  InsertionResultResponse,
+} from '../types';
 
 export async function listRoadmaps(userId?: number): Promise<Roadmap[]> {
   const query = userId !== undefined ? `?user_id=${userId}` : '';
@@ -23,5 +32,33 @@ export async function generateRoadmap(request: RoadmapGenerationRequest): Promis
     method: 'POST',
     body: JSON.stringify(request),
     timeoutMs: 30000, // AI generation can take longer
+  });
+}
+
+export async function previewGeneratedRoadmap(request: RoadmapGenerationRequest): Promise<GeneratedRoadmap> {
+  return apiClient<GeneratedRoadmap>('/roadmaps/generate/preview', {
+    method: 'POST',
+    body: JSON.stringify(request),
+    timeoutMs: 30000,
+  });
+}
+
+export async function previewInsertion(
+  roadmapId: number,
+  request: RoadmapInsertionRequest
+): Promise<InsertionPreviewResponse> {
+  return apiClient<InsertionPreviewResponse>(`/roadmaps/${roadmapId}/insert/preview`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export async function applyInsertion(
+  roadmapId: number,
+  request: RoadmapInsertionRequest
+): Promise<InsertionResultResponse> {
+  return apiClient<InsertionResultResponse>(`/roadmaps/${roadmapId}/insert`, {
+    method: 'POST',
+    body: JSON.stringify(request),
   });
 }

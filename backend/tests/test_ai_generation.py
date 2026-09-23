@@ -448,3 +448,39 @@ def test_api_generate_roadmap_with_daily_capacity_override_and_context(client: T
     for d in data["days"]:
         day_total = sum(t["estimated_minutes"] for t in d["tasks"])
         assert day_total <= 45
+
+
+def test_api_generate_preview_success(client: TestClient, sample_user: User, test_db: Session):
+    """Verify previewing generated roadmap without any database persistence."""
+    initial_roadmaps_count = test_db.query(Roadmap).count()
+    initial_days_count = test_db.query(Day).count()
+
+    payload = {
+        "user_id": sample_user.id,
+        "goal": "FastAPI Masterclass",
+        "target_duration_days": 3,
+        "daily_available_minutes": 60,
+    }
+    resp = client.post("/api/v1/roadmaps/generate/preview", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "title" in data
+    assert data["target_duration_days"] == 3
+    assert len(data["days"]) == 3
+    for d in data["days"]:
+        assert len(d["tasks"]) >= 1
+
+    # Invariant: preview must NEVER persist to database
+    assert test_db.query(Roadmap).count() == initial_roadmaps_count
+    assert test_db.query(Day).count() == initial_days_count
+
+
+def test_api_generate_preview_user_not_found(client: TestClient):
+    """Verify preview fails with 404 if user does not exist."""
+    payload = {
+        "user_id": 9999,
+        "goal": "Ghost User Plan",
+        "target_duration_days": 5,
+    }
+    resp = client.post("/api/v1/roadmaps/generate/preview", json=payload)
+    assert resp.status_code == 404

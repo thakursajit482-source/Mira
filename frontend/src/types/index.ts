@@ -75,3 +75,77 @@ export interface ApiError {
   detail: string | { msg: string; type: string }[];
   status?: number;
 }
+
+export interface GeneratedTask {
+  title: string;
+  description: string | null;
+  estimated_minutes: number;
+  category: string | null;
+  order_index: number;
+}
+
+export interface GeneratedDay {
+  day_number: number;
+  title: string | null;
+  tasks: GeneratedTask[];
+}
+
+export interface GeneratedRoadmap {
+  title: string;
+  description: string | null;
+  target_duration_days: number;
+  days: GeneratedDay[];
+}
+
+export interface NewTaskDefinition {
+  title: string;
+  description?: string | null;
+  estimated_minutes?: number | null;
+  order_index?: number;
+  category?: string | null;
+}
+
+export interface NewDayDefinition {
+  tasks: NewTaskDefinition[];
+}
+
+export interface RoadmapInsertionRequest {
+  new_days: NewDayDefinition[];
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface DayShiftMapping {
+  day_id: number;
+  old_day_number: number;
+  new_day_number: number;
+}
+
+export interface InsertionPreviewResponse {
+  status: string;
+  conflict: boolean;
+  conflict_reason?: string | null;
+  first_incomplete_day?: number | null;
+  insertion_start_day?: number | null;
+  inserted_days_count: number;
+  shifted_days_count: number;
+  available_days: number;
+  required_total_days: number;
+  target_duration_days: number;
+  shifted_days?: DayShiftMapping[];
+  message: string;
+}
+
+export interface InsertionResultResponse {
+  status: string;
+  conflict: boolean;
+  conflict_reason?: string | null;
+  first_incomplete_day?: number | null;
+  insertion_start_day?: number | null;
+  inserted_days_count: number;
+  shifted_days_count: number;
+  available_days: number;
+  required_total_days: number;
+  target_duration_days: number;
+  message: string;
+  roadmap?: RoadmapDetail | null;
+}
