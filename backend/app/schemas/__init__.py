@@ -47,6 +47,15 @@ from backend.app.schemas.momentum import (
     RecentProgressActivity,
     RoadmapMomentumResponse,
 )
+from backend.app.schemas.notification import (
+    NotificationType,
+    NotificationSeverity,
+    NotificationAction,
+    NotificationResponse,
+    NotificationListResponse,
+    NotificationPreferencesResponse,
+    NotificationPreferencesUpdate,
+)
 
 __all__ = [
     "HealthCheckResponse",
@@ -85,5 +94,12 @@ __all__ = [
     "Milestone",
     "RecentProgressActivity",
     "RoadmapMomentumResponse",
+    "NotificationType",
+    "NotificationSeverity",
+    "NotificationAction",
+    "NotificationResponse",
+    "NotificationListResponse",
+    "NotificationPreferencesResponse",
+    "NotificationPreferencesUpdate",
 ]
 

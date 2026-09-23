@@ -3,6 +3,8 @@ import { NavLink, Link } from 'react-router-dom';
 import { Compass, Map, PlusCircle, Settings as SettingsIcon, Menu, X } from 'lucide-react';
 import styles from './Navbar.module.css';
 
+import { NotificationCenter } from '../notification/NotificationCenter';
+
 export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -28,59 +30,63 @@ export const Navbar: React.FC = () => {
           </div>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className={styles.desktopNav} aria-label="Main Navigation">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.activeLink : ''}`
-            }
-          >
-            <Compass size={18} />
-            <span>Today</span>
-          </NavLink>
+        {/* Right Section: Desktop Nav + Notifications + Mobile Toggle */}
+        <div className={styles.navRight}>
+          <nav className={styles.desktopNav} aria-label="Main Navigation">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.activeLink : ''}`
+              }
+            >
+              <Compass size={18} />
+              <span>Today</span>
+            </NavLink>
 
-          <NavLink
-            to="/roadmap"
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.activeLink : ''}`
-            }
-          >
-            <Map size={18} />
-            <span>Roadmap</span>
-          </NavLink>
+            <NavLink
+              to="/roadmap"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.activeLink : ''}`
+              }
+            >
+              <Map size={18} />
+              <span>Roadmap</span>
+            </NavLink>
 
-          <NavLink
-            to="/create"
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.activeLink : ''}`
-            }
-          >
-            <PlusCircle size={18} />
-            <span>Create</span>
-          </NavLink>
+            <NavLink
+              to="/create"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.activeLink : ''}`
+              }
+            >
+              <PlusCircle size={18} />
+              <span>Create</span>
+            </NavLink>
 
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.activeLink : ''}`
-            }
-          >
-            <SettingsIcon size={18} />
-            <span>Settings</span>
-          </NavLink>
-        </nav>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.activeLink : ''}`
+              }
+            >
+              <SettingsIcon size={18} />
+              <span>Settings</span>
+            </NavLink>
+          </nav>
 
-        {/* Mobile Menu Toggle Button */}
-        <button
-          className={styles.mobileToggle}
-          onClick={toggleMobileMenu}
-          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={isMobileMenuOpen}
-        >
-          {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+          <NotificationCenter />
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            className={styles.mobileToggle}
+            onClick={toggleMobileMenu}
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer */}

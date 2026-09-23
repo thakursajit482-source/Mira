@@ -162,3 +162,134 @@
 .philosophyContent strong {
   color: var(--text-primary);
 }
+
+/* Notification Preferences Styles */
+.preferenceGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.preferenceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.preferenceRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.preferenceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.preferenceLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.preferenceDesc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  transition: all var(--transition-fast);
+  border-radius: 24px;
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-muted);
+  transition: all var(--transition-fast);
+  border-radius: 50%;
+}
+
+.toggle input:checked + .toggleSlider {
+  background-color: var(--accent);
+  border-color: var(--accent-light);
+}
+
+.toggle input:checked + .toggleSlider:before {
+  transform: translateX(20px);
+  background-color: #ffffff;
+}
+
+.toggle input:disabled + .toggleSlider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inputField {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.inputField:focus {
+  border-color: var(--accent);
+}
+
+.timezoneControl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.browserNotificationArea {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.savedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--status-completed);
+  font-size: 0.75rem;
+  font-weight: 600;
+  animation: fadeIn 150ms ease-out;
+}

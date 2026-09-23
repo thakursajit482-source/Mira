@@ -21,6 +21,12 @@ from backend.app.models.roadmap import Roadmap
 from backend.app.models.day import Day
 from backend.app.models.task import Task
 from backend.app.models.versioning import RoadmapVersion, RoadmapChange
+from backend.app.models.notification import (
+    Notification,
+    NotificationType,
+    NotificationSeverity,
+    NotificationAction,
+)
 
 __all__ = [
     "Base",
@@ -35,4 +41,8 @@ __all__ = [
     "Task",
     "RoadmapVersion",
     "RoadmapChange",
+    "Notification",
+    "NotificationType",
+    "NotificationSeverity",
+    "NotificationAction",
 ]

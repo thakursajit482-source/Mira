@@ -308,3 +308,48 @@ export interface RoadmapMomentum {
   recent_activity: RecentProgressActivity[];
 }
 
+export type NotificationType =
+  | 'ROADMAP_COMPLETE'
+  | 'OVER_CAPACITY'
+  | 'DAY_INCOMPLETE'
+  | 'DAILY_FOCUS';
+
+export type NotificationSeverity = 'INFO' | 'ATTENTION' | 'SUCCESS';
+
+export type NotificationAction = 'VIEW_TODAY' | 'VIEW_ROADMAP' | 'DISMISS';
+
+export interface NotificationItem {
+  id: number;
+  user_id: number;
+  roadmap_id: number | null;
+  day_id: number | null;
+  type: NotificationType;
+  title: string;
+  message: string;
+  severity: NotificationSeverity;
+  action: NotificationAction;
+  read: boolean;
+  dedup_key: string | null;
+  created_at: string;
+}
+
+export interface NotificationListResponse {
+  notifications: NotificationItem[];
+  unread_count: number;
+  total_count: number;
+}
+
+export interface NotificationPreferences {
+  notifications_enabled: boolean;
+  daily_reminder_enabled: boolean;
+  daily_reminder_time: string;
+  timezone: string;
+}
+
+export interface NotificationPreferencesUpdate {
+  notifications_enabled?: boolean;
+  daily_reminder_enabled?: boolean;
+  daily_reminder_time?: string;
+  timezone?: string;
+}
+
