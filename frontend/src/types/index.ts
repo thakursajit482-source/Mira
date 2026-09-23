@@ -56,9 +56,11 @@ export interface RoadmapProgress {
   total_days: number;
   completed_days: number;
   progress_percentage: number;
-  first_incomplete_day: number | null;
-  status: RoadmapStatus;
-  is_completed: boolean;
+  total_tasks?: number;
+  completed_tasks?: number;
+  first_incomplete_day?: number | null;
+  status?: RoadmapStatus;
+  is_completed?: boolean;
 }
 
 export interface RoadmapGenerationRequest {

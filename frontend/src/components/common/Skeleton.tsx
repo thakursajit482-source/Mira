@@ -109,3 +109,44 @@ export const RoadmapSkeleton: React.FC = () => {
     </div>
   );
 };
+
+export const HomeSkeleton: React.FC = () => {
+  return (
+    <div className={styles.homeSkeleton} aria-label="Loading daily focus..." role="status">
+      {/* Greeting Skeleton */}
+      <div className={styles.greetingSkeleton}>
+        <Skeleton width="180px" height="28px" />
+        <Skeleton width="220px" height="18px" />
+      </div>
+
+      {/* Today's Focus Card Skeleton */}
+      <div className={styles.todayCardSkeleton}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Skeleton width="130px" height="22px" borderRadius="12px" />
+          <Skeleton width="90px" height="16px" />
+        </div>
+        <Skeleton width="55%" height="26px" />
+        <Skeleton width="100%" height="6px" borderRadius="4px" />
+
+        <div className={styles.taskPlaceholders}>
+          <Skeleton width="100%" height="46px" borderRadius="8px" />
+          <Skeleton width="100%" height="46px" borderRadius="8px" />
+          <Skeleton width="100%" height="46px" borderRadius="8px" />
+        </div>
+      </div>
+
+      {/* Roadmap Summary Card Skeleton */}
+      <div className={styles.summaryCardSkeleton}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Skeleton width="140px" height="14px" />
+          <Skeleton width="75px" height="20px" borderRadius="10px" />
+        </div>
+        <Skeleton width="60%" height="22px" />
+        <Skeleton width="100%" height="8px" borderRadius="4px" />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+          <Skeleton width="160px" height="36px" borderRadius="6px" />
+        </div>
+      </div>
+    </div>
+  );
+};

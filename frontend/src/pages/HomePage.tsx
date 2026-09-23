@@ -1,6 +1,15 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, PlusCircle, CheckCircle, Calendar, Clock, Map } from 'lucide-react';
+import {
+  Sparkles,
+  ArrowRight,
+  PlusCircle,
+  CheckCircle2,
+  Clock,
+  Map,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { listRoadmaps, getRoadmapDetails, getRoadmapProgress } from '../api/roadmaps';
 import { completeTask, uncompleteTask } from '../api/tasks';
 import { Roadmap, RoadmapDetail, RoadmapProgress, Day } from '../types';
@@ -9,12 +18,19 @@ import { formatMinutes } from '../utils/formatters';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { ProgressBar } from '../components/common/ProgressBar';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { HomeSkeleton } from '../components/common/Skeleton';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorBanner } from '../components/common/ErrorBanner';
 import { TaskList } from '../components/task/TaskList';
 import { Button } from '../components/common/Button';
 import styles from './HomePage.module.css';
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,8 +43,9 @@ export const HomePage: React.FC = () => {
   const [progress, setProgress] = useState<RoadmapProgress | null>(null);
 
   const [updatingTaskIds, setUpdatingTaskIds] = useState<number[]>([]);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 
-  // Fetch active roadmap and details
+  // Fetch active roadmap, details, and progress
   const loadActiveRoadmap = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -39,11 +56,10 @@ export const HomePage: React.FC = () => {
         setActiveRoadmap(null);
         setRoadmapDetail(null);
         setProgress(null);
-        setIsLoading(false);
         return;
       }
 
-      // Pick the first active or latest roadmap
+      // Pick the primary active roadmap
       const primaryRoadmap = roadmaps[0];
       setActiveRoadmap(primaryRoadmap);
 
@@ -66,7 +82,7 @@ export const HomePage: React.FC = () => {
     loadActiveRoadmap();
   }, [loadActiveRoadmap]);
 
-  // Handle task completion toggle
+  // Handle task completion toggle with backend as sole source of truth
   const handleToggleTask = async (taskId: number, currentStatus: string) => {
     if (!activeRoadmap) return;
 
@@ -79,7 +95,7 @@ export const HomePage: React.FC = () => {
         await completeTask(taskId);
       }
 
-      // Reload authoritative details and progress from backend
+      // Reload fresh authoritative details and progress from backend
       const [updatedDetail, updatedProgress] = await Promise.all([
         getRoadmapDetails(activeRoadmap.id),
         getRoadmapProgress(activeRoadmap.id),
@@ -95,10 +111,40 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading your daily focus..." fullPage />;
+  // Determine current active day using backend status rules
+  const currentDay: Day | null = useMemo(() => {
+    if (!roadmapDetail || !roadmapDetail.days || roadmapDetail.days.length === 0) {
+      return null;
+    }
+
+    const sorted = [...roadmapDetail.days].sort((a, b) => a.day_number - b.day_number);
+
+    // 1. Explicit CURRENT or IN_PROGRESS day
+    const active = sorted.find((d) => d.status === 'CURRENT' || d.status === 'IN_PROGRESS');
+    if (active) return active;
+
+    // 2. AT_RISK day needing immediate attention
+    const atRisk = sorted.find((d) => d.status === 'AT_RISK');
+    if (atRisk) return atRisk;
+
+    // 3. First day with incomplete tasks
+    const firstIncomplete = sorted.find((d) => d.status !== 'COMPLETED');
+    if (firstIncomplete) return firstIncomplete;
+
+    // 4. If all days are completed, return final day
+    return sorted[sorted.length - 1];
+  }, [roadmapDetail]);
+
+  // Loading state with layout-stable Skeleton
+  if (isLoading && !roadmapDetail) {
+    return (
+      <div className="container">
+        <HomeSkeleton />
+      </div>
+    );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="container">
@@ -107,14 +153,15 @@ export const HomePage: React.FC = () => {
     );
   }
 
-  if (!activeRoadmap || !roadmapDetail) {
+  // Empty state when user has no roadmaps
+  if (!activeRoadmap || !roadmapDetail || !currentDay) {
     return (
       <div className="container">
         <EmptyState
-          icon={<Sparkles size={28} />}
-          title="No Active Roadmap"
-          description="You haven't started a roadmap yet. Generate or create your first roadmap to turn your learning plans into daily progress."
-          actionLabel="Create Your First Roadmap"
+          icon={<Sparkles size={32} />}
+          title="No Roadmap Yet"
+          description="Start with a goal you've already decided to pursue. Mira will help you break it down into daily progress."
+          actionLabel="Create Roadmap"
           onAction={() => navigate('/create')}
           actionIcon={<PlusCircle size={18} />}
         />
@@ -122,168 +169,195 @@ export const HomePage: React.FC = () => {
     );
   }
 
-  // Determine current day from progress or detail
-  const days = roadmapDetail.days || [];
-  let currentDay: Day | undefined = undefined;
+  const tasks = currentDay.tasks || [];
+  const completedTasksCount = tasks.filter((t) => t.status === 'COMPLETED').length;
+  const isDayCompleted = currentDay.status === 'COMPLETED' || (tasks.length > 0 && completedTasksCount === tasks.length);
 
-  if (progress && progress.first_incomplete_day) {
-    currentDay = days.find((d) => d.day_number === progress.first_incomplete_day);
-  }
+  const remainingMinutes = tasks
+    .filter((t) => t.status !== 'COMPLETED')
+    .reduce((sum, t) => sum + t.estimated_minutes, 0);
 
-  if (!currentDay) {
-    currentDay = days.find((d) => d.status === 'CURRENT' || d.status === 'IN_PROGRESS');
-  }
+  const totalMinutes = tasks.reduce((sum, t) => sum + t.estimated_minutes, 0);
 
-  if (!currentDay && days.length > 0) {
-    currentDay = days[0];
-  }
+  const todayPercentage = tasks.length > 0 ? Math.round((completedTasksCount / tasks.length) * 100) : 0;
 
-  // Find next upcoming day
-  const nextDay = currentDay
-    ? days.find((d) => d.day_number === currentDay!.day_number + 1)
-    : undefined;
+  const greeting = getGreeting();
 
-  const currentTasks = currentDay?.tasks || [];
-  const totalDayMinutes = currentTasks.reduce((sum, t) => sum + t.estimated_minutes, 0);
+  const getStatusBadge = () => {
+    if (isDayCompleted) {
+      return <Badge variant="completed" dot>Completed</Badge>;
+    }
+    if (currentDay.status === 'AT_RISK') {
+      return <Badge variant="at-risk" dot>At Risk</Badge>;
+    }
+    if (currentDay.status === 'IN_PROGRESS') {
+      return <Badge variant="in-progress" dot>In Progress</Badge>;
+    }
+    return <Badge variant="current" dot>Current Level</Badge>;
+  };
 
   return (
     <div className="container">
-      {/* Top Banner / Roadmap Summary */}
-      <div className={styles.topSection}>
-        <div className={styles.roadmapInfo}>
-          <div className={styles.titleRow}>
-            <h1 className={styles.roadmapTitle}>{activeRoadmap.title}</h1>
-            <Badge variant="current" dot>
-              {progress?.is_completed ? 'Completed' : 'Active Plan'}
-            </Badge>
-          </div>
-          <p className={styles.roadmapDescription}>
-            {activeRoadmap.description || 'Follow your daily plan and complete tasks to advance.'}
-          </p>
-        </div>
+      <div className={styles.dashboard}>
+        {/* LEVEL 1: Calm Contextual Greeting */}
+        <header className={styles.greetingHeader}>
+          <h1 className={styles.greetingTitle}>{greeting}.</h1>
+          <p className={styles.greetingSubtitle}>Let&apos;s make progress today.</p>
+        </header>
 
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => navigate('/roadmap')}
-          leftIcon={<Map size={16} />}
-          rightIcon={<ArrowRight size={14} />}
-        >
-          Continue Roadmap
-        </Button>
-      </div>
-
-      {/* Progress Bar Card */}
-      {progress && (
-        <Card className={styles.progressCard} padding="md">
-          <ProgressBar
-            percentage={progress.progress_percentage}
-            label={`Day ${progress.completed_days} of ${progress.total_days} Completed`}
-            size="md"
-            variant={progress.is_completed ? 'success' : 'primary'}
-          />
-        </Card>
-      )}
-
-      {/* Main Grid: Today's Focus & Side Cards */}
-      <div className={styles.contentGrid}>
-        {/* Left Column: Today's Focus Card */}
-        <div className={styles.mainColumn}>
-          <Card variant="elevated" padding="lg" className={styles.todayCard}>
+        {/* LEVEL 2: Today's Focus (Centerpiece) */}
+        <section aria-label="Today's Focus" className={styles.focusSection}>
+          <Card
+            variant={isDayCompleted ? 'default' : 'elevated'}
+            padding="lg"
+            className={`${styles.todayCard} ${isDayCompleted ? styles.todayCardCompleted : ''}`}
+          >
+            {/* Header: Tag + Badge */}
             <div className={styles.cardHeader}>
-              <div className={styles.levelBadgeRow}>
-                <span className={styles.levelLabel}>
-                  {currentDay ? `Day ${currentDay.day_number}` : 'Daily Focus'}
+              <div className={styles.tagRow}>
+                <span className={styles.focusLabel}>Today&apos;s Focus</span>
+                {getStatusBadge()}
+              </div>
+              <h2 className={styles.dayTitle}>
+                Day {currentDay.day_number}: {currentDay.title || `Day ${currentDay.day_number}`}
+              </h2>
+            </div>
+
+            {/* Daily Task Progress Bar & Workload */}
+            <div className={styles.dailyProgressBlock}>
+              <div className={styles.progressStats}>
+                <span className={styles.taskCounter}>
+                  <strong>{completedTasksCount}</strong> of <strong>{tasks.length}</strong> tasks completed
                 </span>
-                {currentDay?.status === 'COMPLETED' ? (
-                  <Badge variant="completed" dot>Completed</Badge>
-                ) : currentDay?.status === 'AT_RISK' ? (
-                  <Badge variant="at-risk" dot>At Risk</Badge>
+                {remainingMinutes > 0 ? (
+                  <span className={styles.timeRemaining}>
+                    <Clock size={13} />
+                    <span>{formatMinutes(remainingMinutes)} remaining</span>
+                  </span>
                 ) : (
-                  <Badge variant="current" dot>Current Level</Badge>
+                  <span className={styles.timeDone}>
+                    <CheckCircle2 size={13} />
+                    <span>All tasks done</span>
+                  </span>
                 )}
               </div>
-              <h2 className={styles.cardTitle}>
-                {currentDay?.title || "Today's Work"}
-              </h2>
-              <div className={styles.cardMeta}>
-                <span className={styles.metaItem}>
-                  <Clock size={14} />
-                  <span>{formatMinutes(totalDayMinutes)}</span>
-                </span>
-                <span className={styles.metaItem}>
-                  <CheckCircle size={14} />
-                  <span>{currentTasks.length} tasks</span>
-                </span>
+
+              {/* Mini Daily Progress Track */}
+              <div
+                className={styles.miniTrack}
+                role="progressbar"
+                aria-valuenow={todayPercentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Today's task completion progress"
+              >
+                <div
+                  className={`${styles.miniFill} ${isDayCompleted ? styles.miniFillDone : ''}`}
+                  style={{ width: `${todayPercentage}%` }}
+                />
               </div>
             </div>
 
-            {/* Task list for current day */}
-            <div className={styles.cardBody}>
-              <TaskList
-                tasks={currentTasks}
-                onToggleTask={handleToggleTask}
-                updatingTaskIds={updatingTaskIds}
-                showSummary={true}
-              />
-            </div>
+            {/* Task Area: Active List OR Satisfying Completed Moment */}
+            {isDayCompleted ? (
+              <div className={styles.dayCompleteState}>
+                <div className={styles.dayCompleteIcon}>
+                  <CheckCircle2 size={36} className={styles.checkDoneIcon} />
+                </div>
+                <div className={styles.dayCompleteMessage}>
+                  <h3 className={styles.dayCompleteTitle}>Day Complete ✓</h3>
+                  <p className={styles.dayCompleteDesc}>
+                    You&apos;ve finished today&apos;s work. Ready to see what comes next?
+                  </p>
+                </div>
+
+                <div className={styles.dayCompleteActions}>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigate('/roadmap')}
+                    leftIcon={<Map size={16} />}
+                    rightIcon={<ArrowRight size={14} />}
+                  >
+                    Continue to Roadmap
+                  </Button>
+
+                  <button
+                    type="button"
+                    className={styles.toggleTasksBtn}
+                    onClick={() => setShowCompletedTasks((prev) => !prev)}
+                    aria-expanded={showCompletedTasks}
+                  >
+                    <span>{showCompletedTasks ? 'Hide' : 'Review'} today&apos;s tasks ({tasks.length})</span>
+                    {showCompletedTasks ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </button>
+                </div>
+
+                {showCompletedTasks && (
+                  <div className={styles.completedTasksDrawer}>
+                    <TaskList
+                      tasks={tasks}
+                      onToggleTask={handleToggleTask}
+                      updatingTaskIds={updatingTaskIds}
+                      showSummary={false}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles.tasksWrapper}>
+                <TaskList
+                  tasks={tasks}
+                  onToggleTask={handleToggleTask}
+                  updatingTaskIds={updatingTaskIds}
+                  showSummary={false}
+                />
+              </div>
+            )}
           </Card>
-        </div>
+        </section>
 
-        {/* Right Column: Upcoming & Tips */}
-        <div className={styles.sideColumn}>
-          {/* Next Level Preview */}
-          {nextDay ? (
-            <Card padding="md" className={styles.nextCard}>
-              <div className={styles.nextHeader}>
-                <span className={styles.nextTag}>Upcoming Next</span>
-                <Badge variant="locked" size="sm">Locked</Badge>
+        {/* LEVEL 3: Current Roadmap Summary Card */}
+        <section aria-label="Current Roadmap Summary" className={styles.summarySection}>
+          <Card padding="md" className={styles.roadmapSummaryCard}>
+            <div className={styles.summaryTop}>
+              <div className={styles.summaryLabelRow}>
+                <span className={styles.summaryTag}>Current Roadmap</span>
+                <span className={styles.roadmapDaysCount}>
+                  Day {progress?.completed_days || 0} of {progress?.total_days || activeRoadmap.target_duration_days}
+                </span>
               </div>
-              <h4 className={styles.nextTitle}>Day {nextDay.day_number}: {nextDay.title || 'Next Level'}</h4>
-              <p className={styles.nextMeta}>
-                {nextDay.tasks?.length || 0} tasks • {formatMinutes(nextDay.tasks?.reduce((sum, t) => sum + t.estimated_minutes, 0) || 0)}
-              </p>
+              <h3 className={styles.summaryTitle}>{activeRoadmap.title}</h3>
+            </div>
+
+            {progress && (
+              <div className={styles.summaryProgressBar}>
+                <ProgressBar
+                  percentage={progress.progress_percentage}
+                  label={`${Math.round(progress.progress_percentage)}% completed`}
+                  size="md"
+                  variant={progress.is_completed ? 'success' : 'primary'}
+                />
+              </div>
+            )}
+
+            <div className={styles.summaryBottom}>
+              <span className={styles.summarySubtext}>
+                {totalMinutes > 0 && `Daily pace: ~${formatMinutes(totalMinutes)}`}
+              </span>
+
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
-                className={styles.viewRoadmapBtn}
                 onClick={() => navigate('/roadmap')}
+                leftIcon={<Map size={14} />}
                 rightIcon={<ArrowRight size={14} />}
               >
-                Inspect on Roadmap
+                Continue Roadmap
               </Button>
-            </Card>
-          ) : (
-            <Card padding="md" className={styles.nextCard}>
-              <div className={styles.nextHeader}>
-                <span className={styles.nextTag}>Milestone</span>
-                <Badge variant="completed" size="sm">Final Day</Badge>
-              </div>
-              <h4 className={styles.nextTitle}>Final Level</h4>
-              <p className={styles.nextMeta}>
-                You are on the final stretch of this roadmap! Complete today&apos;s tasks to finish the entire plan.
-              </p>
-            </Card>
-          )}
-
-          {/* Quick Info Card */}
-          <Card padding="md" className={styles.infoCard}>
-            <div className={styles.infoItem}>
-              <Calendar size={16} className={styles.infoIcon} />
-              <div>
-                <span className={styles.infoLabel}>Target Duration</span>
-                <p className={styles.infoValue}>{activeRoadmap.target_duration_days} Days</p>
-              </div>
-            </div>
-            <div className={styles.infoItem}>
-              <Clock size={16} className={styles.infoIcon} />
-              <div>
-                <span className={styles.infoLabel}>Daily Capacity</span>
-                <p className={styles.infoValue}>{formatMinutes(DEV_USER.dailyAvailableMinutes)}</p>
-              </div>
             </div>
           </Card>
-        </div>
+        </section>
       </div>
     </div>
   );
