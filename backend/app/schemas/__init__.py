@@ -56,6 +56,11 @@ from backend.app.schemas.notification import (
     NotificationPreferencesResponse,
     NotificationPreferencesUpdate,
 )
+from backend.app.schemas.user import (
+    UserPreferencesResponse,
+    UserPreferencesUpdate,
+    RoadmapExportResponse,
+)
 
 __all__ = [
     "HealthCheckResponse",
@@ -101,5 +106,8 @@ __all__ = [
     "NotificationListResponse",
     "NotificationPreferencesResponse",
     "NotificationPreferencesUpdate",
+    "UserPreferencesResponse",
+    "UserPreferencesUpdate",
+    "RoadmapExportResponse",
 ]
 

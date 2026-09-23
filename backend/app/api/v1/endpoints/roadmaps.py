@@ -24,6 +24,7 @@ from backend.app.schemas.rescheduling import (
 from backend.app.schemas.history import RoadmapHistoryResponse
 from backend.app.schemas.daily_analysis import DailyWorkloadAnalysisResponse
 from backend.app.schemas.momentum import RoadmapMomentumResponse
+from backend.app.schemas.user import RoadmapExportResponse
 from backend.app.ai.schemas import RoadmapGenerationRequest, GeneratedRoadmap
 from backend.app.ai.service import ai_service
 from backend.app.ai.validator import AIValidationError
@@ -308,3 +309,17 @@ def delete_roadmap(
 ) -> None:
     """Delete a roadmap."""
     roadmap_service.delete_roadmap(db, roadmap_id)
+
+
+@router.get(
+    "/{roadmap_id}/export",
+    response_model=RoadmapExportResponse,
+    summary="Export Roadmap Data",
+    description="Export complete roadmap data, days, tasks, and change history as clean, structured JSON.",
+)
+def export_roadmap(
+    roadmap_id: int,
+    db: Session = Depends(get_db),
+) -> RoadmapExportResponse:
+    """Export complete roadmap data as JSON."""
+    return roadmap_service.export_roadmap(db, roadmap_id)

@@ -363,5 +363,75 @@ class RoadmapService:
             changes=change_responses,
         )
 
+    @staticmethod
+    def export_roadmap(db: Session, roadmap_id: int):
+        """Export roadmap, days, tasks, and history deterministically as clean JSON."""
+        from datetime import datetime, timezone
+        from backend.app.schemas.user import RoadmapExportResponse
+
+        roadmap = db.get(Roadmap, roadmap_id)
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Roadmap with id {roadmap_id} not found",
+            )
+
+        roadmap_data = {
+            "id": roadmap.id,
+            "title": roadmap.title,
+            "description": roadmap.description,
+            "target_duration_days": roadmap.target_duration_days,
+            "status": roadmap.status.value if hasattr(roadmap.status, "value") else str(roadmap.status),
+            "start_date": roadmap.start_date.isoformat() if roadmap.start_date else None,
+            "target_deadline": roadmap.target_deadline.isoformat() if roadmap.target_deadline else None,
+            "created_at": roadmap.created_at.isoformat() if roadmap.created_at else None,
+        }
+
+        days_data = []
+        tasks_data = []
+        for day in sorted(roadmap.days, key=lambda d: d.day_number):
+            days_data.append({
+                "id": day.id,
+                "day_number": day.day_number,
+                "status": day.status.value if hasattr(day.status, "value") else str(day.status),
+                "date": day.date.isoformat() if day.date else None,
+                "completed_at": day.completed_at.isoformat() if day.completed_at else None,
+            })
+            for task in sorted(day.tasks, key=lambda t: t.order_index):
+                tasks_data.append({
+                    "id": task.id,
+                    "day_id": task.day_id,
+                    "day_number": day.day_number,
+                    "title": task.title,
+                    "description": task.description,
+                    "estimated_minutes": task.estimated_minutes,
+                    "order_index": task.order_index,
+                    "status": task.status.value if hasattr(task.status, "value") else str(task.status),
+                    "is_completed": task.is_completed,
+                    "category": task.category,
+                    "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                })
+
+        history_resp = RoadmapService.get_roadmap_history(db, roadmap_id)
+        history_data = [
+            {
+                "id": c.id,
+                "version_number": c.version_number,
+                "change_type": c.change_type.value if hasattr(c.change_type, "value") else str(c.change_type),
+                "description": c.description,
+                "metadata_info": c.metadata_info,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+            }
+            for c in history_resp.changes
+        ]
+
+        return RoadmapExportResponse(
+            roadmap=roadmap_data,
+            days=days_data,
+            tasks=tasks_data,
+            history=history_data,
+            exported_at=datetime.now(timezone.utc).isoformat(),
+        )
+
 
 roadmap_service = RoadmapService()

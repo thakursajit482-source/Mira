@@ -14,6 +14,7 @@ import {
   ReschedulePreviewResponse,
   RescheduleResultResponse,
   RoadmapMomentum,
+  RoadmapExportData,
 } from '../types';
 
 export async function listRoadmaps(userId?: number): Promise<Roadmap[]> {
@@ -103,4 +104,14 @@ export async function applyReschedule(
 
 export async function getRoadmapMomentum(roadmapId: number): Promise<RoadmapMomentum> {
   return apiClient<RoadmapMomentum>(`/roadmaps/${roadmapId}/momentum`);
+}
+
+export async function deleteRoadmap(roadmapId: number): Promise<void> {
+  return apiClient<void>(`/roadmaps/${roadmapId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function exportRoadmap(roadmapId: number): Promise<RoadmapExportData> {
+  return apiClient<RoadmapExportData>(`/roadmaps/${roadmapId}/export`);
 }

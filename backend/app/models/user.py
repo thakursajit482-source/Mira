@@ -44,6 +44,20 @@ class User(Base, TimestampMixin):
         nullable=False,
     )
 
+    # Appearance & Roadmap Preferences (Phase 10.9)
+    theme: Mapped[str] = mapped_column(
+        String(20),
+        default="system",
+        server_default="system",
+        nullable=False,
+    )
+    ask_before_reschedule: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default=true(),
+        nullable=False,
+    )
+
     # Relationships
     roadmaps: Mapped[List["Roadmap"]] = relationship(
         "Roadmap",

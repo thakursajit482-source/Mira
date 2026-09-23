@@ -353,3 +353,37 @@ export interface NotificationPreferencesUpdate {
   timezone?: string;
 }
 
+export type ThemeOption = 'system' | 'light' | 'dark';
+
+export interface UserPreferences {
+  user_id: number;
+  username: string;
+  email: string;
+  daily_available_minutes: number;
+  theme: ThemeOption;
+  timezone: string;
+  notifications_enabled: boolean;
+  daily_reminder_enabled: boolean;
+  daily_reminder_time: string;
+  ask_before_reschedule: boolean;
+}
+
+export interface UserPreferencesUpdate {
+  username?: string;
+  daily_available_minutes?: number;
+  theme?: ThemeOption;
+  timezone?: string;
+  notifications_enabled?: boolean;
+  daily_reminder_enabled?: boolean;
+  daily_reminder_time?: string;
+  ask_before_reschedule?: boolean;
+}
+
+export interface RoadmapExportData {
+  roadmap: Record<string, unknown>;
+  days: Array<Record<string, unknown>>;
+  tasks: Array<Record<string, unknown>>;
+  history: Array<Record<string, unknown>>;
+  exported_at: string;
+}
+
