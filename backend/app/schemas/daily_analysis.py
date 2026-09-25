@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as dt_date
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ class DailyWorkloadAnalysisResponse(BaseModel):
     roadmap_id: int
     day_number: int
     day_id: int
-    date: Optional[date] = None
+    date: Optional[dt_date] = None
     status: DailyWorkloadStatus
     remaining_task_count: int
     completed_task_count: int

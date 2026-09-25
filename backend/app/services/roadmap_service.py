@@ -1,3 +1,4 @@
+from datetime import datetime, date as dt_date
 from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -194,6 +195,24 @@ class RoadmapService:
         return rescheduling_engine.apply_reschedule(db, roadmap, user, request)
 
     @staticmethod
+    def _parse_day_title_to_date(title: Optional[str], default_year: int = 2026) -> Optional[dt_date]:
+        """Convert a date-like title (e.g. '24 September') into a date object if possible."""
+        if not title:
+            return None
+        title = title.strip()
+        for fmt in ("%d %B %Y", "%d %b %Y"):
+            try:
+                return datetime.strptime(title, fmt).date()
+            except ValueError:
+                pass
+        for fmt in ("%d %B %Y", "%d %b %Y"):
+            try:
+                return datetime.strptime(f"{title} {default_year}", fmt).date()
+            except ValueError:
+                pass
+        return None
+
+    @staticmethod
     def generate_and_create_roadmap(
         db: Session,
         request: RoadmapGenerationRequest,
@@ -248,9 +267,11 @@ class RoadmapService:
             snapshot_days = []
             for day_data in sorted(generated.days, key=lambda d: d.day_number):
                 day_status = DayStatus.CURRENT if day_data.day_number == 1 else DayStatus.LOCKED
+                day_date = RoadmapService._parse_day_title_to_date(day_data.title)
                 day = Day(
                     roadmap_id=roadmap.id,
                     day_number=day_data.day_number,
+                    date=day_date,
                     status=day_status,
                 )
                 db.add(day)

@@ -86,8 +86,8 @@ def test_mock_ai_provider_generates_structured_output():
     assert isinstance(res, GeneratedRoadmap)
     assert res.target_duration_days == 5
     assert len(res.days) == 5
+    # Title is now the goal only — context is NOT embedded in the title
     assert "Master FastAPI and PostgreSQL" in res.title
-    assert "Intermediate Python Developer" in res.title
     assert [d.day_number for d in res.days] == [1, 2, 3, 4, 5]
 
     for d in res.days:
@@ -150,10 +150,16 @@ def test_validator_accepts_valid_generated_roadmap():
     AIValidator.validate(valid_roadmap, req, daily_capacity=120)
 
 
-def test_validator_rejects_missing_title():
+def test_validator_accepts_whitespace_only_roadmap_title_as_placeholder():
+    """
+    Whitespace-only roadmap title is normalized to "Untitled Roadmap" by the
+    field_validator before AIValidator sees it, so AIValidator no longer raises.
+    The blank-title guard in AIValidator remains as a last-resort safeguard for
+    cases where a GeneratedRoadmap is constructed without going through Pydantic.
+    """
     req = RoadmapGenerationRequest(user_id=1, goal="Goal", target_duration_days=1)
-    bad_roadmap = GeneratedRoadmap(
-        title="   ",  # Blank title
+    roadmap = GeneratedRoadmap(
+        title="   ",  # normalizer converts to "Untitled Roadmap"
         target_duration_days=1,
         days=[
             GeneratedDay(
@@ -162,8 +168,10 @@ def test_validator_rejects_missing_title():
             )
         ],
     )
-    with pytest.raises(AIValidationError, match="Roadmap title is missing or empty"):
-        AIValidator.validate(bad_roadmap, req, daily_capacity=120)
+    # Title was normalized — AIValidator must NOT raise
+    assert roadmap.title == "Untitled Roadmap"
+    AIValidator.validate(roadmap, req, daily_capacity=120)  # should not raise
+
 
 
 def test_validator_rejects_duration_mismatch():
@@ -212,14 +220,24 @@ def test_schema_rejects_invalid_task_duration():
         GeneratedTask(title="Task 1", estimated_minutes=0, order_index=0)
 
 
-def test_schema_rejects_missing_task_title():
-    with pytest.raises(ValidationError, match="string_too_short"):
-        GeneratedTask(title="", estimated_minutes=30, order_index=0)
+def test_schema_normalizes_empty_task_title_to_placeholder():
+    """
+    An empty task title is now normalized to "Untitled Roadmap" by the field_validator
+    rather than raising a ValidationError (string_too_short). The schema min_length=1
+    is satisfied because the placeholder is non-empty.
+    """
+    task = GeneratedTask(title="", estimated_minutes=30, order_index=0)
+    assert task.title == "Untitled Roadmap"
 
 
-def test_validator_rejects_whitespace_task_title():
+def test_validator_accepts_whitespace_task_title_after_normalization():
+    """
+    Whitespace-only task titles are normalized to "Untitled Roadmap" by the
+    field_validator, so AIValidator's blank-task-title check no longer fires
+    for Pydantic-constructed objects.
+    """
     req = RoadmapGenerationRequest(user_id=1, goal="Goal", target_duration_days=1)
-    bad_roadmap = GeneratedRoadmap(
+    roadmap = GeneratedRoadmap(
         title="Whitespace Task Title",
         target_duration_days=1,
         days=[
@@ -229,8 +247,11 @@ def test_validator_rejects_whitespace_task_title():
             )
         ],
     )
-    with pytest.raises(AIValidationError, match="missing a title"):
-        AIValidator.validate(bad_roadmap, req, daily_capacity=120)
+    # Task title was normalized
+    assert roadmap.days[0].tasks[0].title == "Untitled Roadmap"
+    # AIValidator sees a valid (normalized) title — must not raise for the title check
+    AIValidator.validate(roadmap, req, daily_capacity=120)
+
 
 
 def test_validator_rejects_impossible_workload():

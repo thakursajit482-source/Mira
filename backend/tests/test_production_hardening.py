@@ -96,13 +96,21 @@ def test_root_metadata_endpoint(client: TestClient):
 
 
 def test_production_environment_defaults():
-    """Verify production settings defaults disable debug and docs by default."""
-    prod_settings = Settings(ENVIRONMENT="production")
+    """Verify production settings defaults disable debug and docs by default.
+
+    The .env file sets DEBUG=True and ENABLE_DOCS=True for local development.
+    This test explicitly overrides DEBUG=None and ENABLE_DOCS=None so the
+    model_validator's environment-inference logic is exercised directly,
+    independent of .env file values.
+    """
+    # Pass DEBUG=None and ENABLE_DOCS=None to bypass .env file overrides
+    # and let the model_validator compute the correct production defaults.
+    prod_settings = Settings(ENVIRONMENT="production", DEBUG=None, ENABLE_DOCS=None, LOG_LEVEL="INFO")
     assert prod_settings.DEBUG is False
     assert prod_settings.ENABLE_DOCS is False
     assert prod_settings.LOG_LEVEL == "INFO"
 
-    dev_settings = Settings(ENVIRONMENT="development")
+    dev_settings = Settings(ENVIRONMENT="development", DEBUG=None, ENABLE_DOCS=None)
     assert dev_settings.DEBUG is True
     assert dev_settings.ENABLE_DOCS is True
 

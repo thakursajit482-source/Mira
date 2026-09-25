@@ -304,6 +304,9 @@ export const HomePage: React.FC = () => {
               </div>
               <h2 className={styles.dayTitle}>
                 Day {currentDay.day_number}
+                {currentDay.title && (
+                  <span className={styles.dayDateLabel}>{currentDay.title}</span>
+                )}
               </h2>
             </div>
 
